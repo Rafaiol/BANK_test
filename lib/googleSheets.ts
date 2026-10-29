@@ -65,10 +65,17 @@ function getAuth() {
   if (!GOOGLE_CLIENT_EMAIL || !GOOGLE_PRIVATE_KEY) return null;
 
   try {
+    // Robust cleanup: strip leading/trailing quotes, remove \r, convert escaped \n to real newlines
+    let key = GOOGLE_PRIVATE_KEY.trim();
+    if ((key.startsWith('"') && key.endsWith('"')) || (key.startsWith("'") && key.endsWith("'"))) {
+      key = key.slice(1, -1);
+    }
+    key = key.replace(/\\n/g, "\n").replace(/\r/g, "");
+
     return new google.auth.GoogleAuth({
       credentials: {
-        client_email: GOOGLE_CLIENT_EMAIL,
-        private_key: GOOGLE_PRIVATE_KEY.replace(/\\n/g, "\n"),
+        client_email: GOOGLE_CLIENT_EMAIL.trim(),
+        private_key: key,
       },
       scopes: ["https://www.googleapis.com/auth/spreadsheets"],
     });

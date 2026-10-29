@@ -241,6 +241,9 @@ export default function SimulationWizard({ data }: SimulationWizardProps) {
 
       if (!res.ok) {
         setToast({ message: json.error ?? "Erreur lors de la sauvegarde.", type: "error" });
+      } else if (!json.saved) {
+        // Alert the user that Google Sheets credentials are not configured on the server
+        setToast({ message: json.message, type: "error" });
       } else {
         setToast({ message: json.message, type: "success" });
       }
