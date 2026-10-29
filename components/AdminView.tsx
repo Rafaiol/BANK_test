@@ -779,7 +779,13 @@ export default function AdminView({ initialData, onDataUpdated }: AdminViewProps
                           {row.id}
                         </td>
                         <td className="px-3 py-2 text-gray-500">{row.date}</td>
-                        <td className="px-3 py-2 font-mono">{row.telephone}</td>
+                        <td className="px-3 py-2 font-mono">
+                          {row.telephone ? (
+                            <span className="text-gray-900 font-medium">{row.telephone}</span>
+                          ) : (
+                            <span className="text-gray-300 font-sans italic text-xs">—</span>
+                          )}
+                        </td>
                         <td className="px-3 py-2">{row.typeClient}</td>
                         <td className="px-3 py-2">{Number(row.revenu || 0).toLocaleString()} د.ج.</td>
                         <td className="px-3 py-2 font-semibold">{Number(row.price || 0).toLocaleString()} د.ج.</td>

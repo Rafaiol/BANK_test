@@ -411,32 +411,34 @@ export async function getSimulations(): Promise<any[]> {
     try {
       const res = await sheets.spreadsheets.values.get({
         spreadsheetId: sheetId,
-        range: `'${SHEET_TABS.simulations}'!B2:W`,
+        range: `'${SHEET_TABS.simulations}'!A2:Z`,
       });
       const rows = res.data.values;
       if (rows && rows.length > 0) {
         return rows
           .slice()
           .reverse()
+          .filter((r) => r[1] && String(r[1]).trim() !== "")
           .map((r) => ({
-            id: r[0] ?? "",
-            date: r[1] ?? "",
-            direction: r[2] ?? "",
-            agence: r[3] ?? "",
-            categorie: r[5] ?? "",
-            marque: r[6] ?? "",
-            produit: r[7] ?? "",
-            typeClient: r[8] ?? "",
-            tauxProfit: r[9] ?? "",
-            revenu: r[10] ?? "",
-            dureeMois: r[11] ?? "",
-            price: r[13] ?? "",
-            montantAFinancer: r[14] ?? "",
-            hamishJidia: r[15] ?? "",
-            mensualite: r[16] ?? "",
-            margeBeneficiaire: r[17] ?? "",
-            pointsDeVente: r[20] ?? "",
-            telephone: r[21] ?? "",
+            id: r[1] ?? "",
+            date: r[2] ?? "",
+            direction: r[3] ?? "",
+            agence: r[4] ?? "",
+            categorie: r[6] ?? "",
+            marque: r[7] ?? "",
+            produit: r[8] ?? "",
+            typeClient: r[9] ?? "",
+            tauxProfit: r[10] ?? "",
+            revenu: r[11] ?? "",
+            dureeMois: r[12] ?? "",
+            price: r[14] ?? "",
+            montantAFinancer: r[15] ?? "",
+            hamishJidia: r[16] ?? "",
+            mensualite: r[17] ?? "",
+            margeBeneficiaire: r[18] ?? "",
+            pointsDeVente: r[21] ?? "",
+            // Col Z (index 25) is 'Numero Telephone'. Old Col W (index 22) was 'DATE_NAISSANCE'.
+            telephone: r[25] ? String(r[25]).trim() : "",
           }));
       }
     } catch {
@@ -450,6 +452,7 @@ export async function getSimulations(): Promise<any[]> {
     return csvRows
       .slice(1)
       .reverse()
+      .filter((r) => r[1] && String(r[1]).trim() !== "")
       .map((r) => ({
         id: r[1] ?? "",
         date: r[2] ?? "",
@@ -468,7 +471,7 @@ export async function getSimulations(): Promise<any[]> {
         mensualite: r[17] ?? "",
         margeBeneficiaire: r[18] ?? "",
         pointsDeVente: r[21] ?? "",
-        telephone: r[22] ?? "",
+        telephone: r[25] ? String(r[25]).trim() : "",
       }));
   }
 
@@ -504,40 +507,55 @@ export async function appendSimulation(row: SimulationRow): Promise<boolean> {
 
   if (!sheets || !sheetId) return false;
 
-  const values = [
-    [
-      "",
-      row.id,
-      row.date,
-      "DRE BOUIRA",
-      row.agence,
-      "",
-      row.categorie,
-      row.marque,
-      row.produit,
-      row.typeClient,
-      row.tauxProfit,
-      row.revenu,
-      row.dureeMois,
-      "",
-      row.price,
-      row.montantAFinancer,
-      row.hamishJidia,
-      row.mensualite,
-      row.margeBeneficiaire,
-      "",
-      "",
-      row.pointsDeVente,
-      row.telephone,
-    ],
+  // Format phone with leading apostrophe so Google Sheets preserves leading zero (e.g. 0550...)
+  const phoneFormatted = row.telephone
+    ? (row.telephone.startsWith("'") ? row.telephone : `'${row.telephone}`)
+    : "";
+
+  const newRowValues = [
+    "",                         // 0: Col A - PAGE 01
+    row.id,                     // 1: Col B - ID_SIMULATION
+    row.date,                   // 2: Col C - DATE
+    "DRE BOUIRA",               // 3: Col D - Direction Régionale d'Exploitation
+    row.agence,                 // 4: Col E - AGENCE
+    "",                         // 5: Col F - PAGE_2
+    row.categorie,              // 6: Col G - CATEGORIE
+    row.marque,                 // 7: Col H - MARQUE
+    row.produit,                // 8: Col I - PRODUIT
+    row.typeClient,             // 9: Col J - TYPE_CLIENT
+    row.tauxProfit,             // 10: Col K - TAUX_PROFIT
+    row.revenu,                 // 11: Col L - REVENU
+    row.dureeMois,              // 12: Col M - DUREE_MOIS
+    "",                         // 13: Col N - PAGE_3
+    row.price,                  // 14: Col O - PRICE 
+    row.montantAFinancer,       // 15: Col P - MONTANT_A_FINANCER
+    row.hamishJidia,            // 16: Col Q - HAMISH_JIDIA
+    row.mensualite,             // 17: Col R - MENSUALITE
+    row.margeBeneficiaire,      // 18: Col S - MARGE_BENEFICIAIRE
+    "",                         // 19: Col T - COUT_GLOBAL
+    "",                         // 20: Col U - PRIX_TOTAL
+    row.pointsDeVente,          // 21: Col V - POINTS_DE_VENTE_CORRESPONDANTS
+    "",                         // 22: Col W - DATE_NAISSANCE (left blank)
+    "",                         // 23: Col X - PAGE_2
+    "",                         // 24: Col Y - Fichier PDF
+    phoneFormatted,             // 25: Col Z - Numero Telephone
   ];
 
   try {
-    await sheets.spreadsheets.values.append({
+    // Find next available row using Column B (ID_SIMULATION) to prevent Google Sheets append heuristics column shift
+    const colBRes = await sheets.spreadsheets.values.get({
       spreadsheetId: sheetId,
-      range: `'${SHEET_TABS.simulations}'!A:W`,
+      range: `'${SHEET_TABS.simulations}'!B:B`,
+    });
+    const rowCount = colBRes.data.values ? colBRes.data.values.length : 1;
+    const targetRow = rowCount + 1;
+
+    // Explicitly update columns A through Z of targetRow
+    await sheets.spreadsheets.values.update({
+      spreadsheetId: sheetId,
+      range: `'${SHEET_TABS.simulations}'!A${targetRow}:Z${targetRow}`,
       valueInputOption: "USER_ENTERED",
-      requestBody: { values },
+      requestBody: { values: [newRowValues] },
     });
     return true;
   } catch (err) {

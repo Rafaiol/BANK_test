@@ -162,39 +162,43 @@ export default function Tab3DetailSimulation({
 
       {/* PDF Export Action Card */}
       <div
-        className={`p-4 rounded-xl border transition-all ${
+        className={`p-4 sm:p-5 rounded-2xl border transition-all ${
           isExportReady
-            ? "bg-gradient-to-r from-purple-50/70 via-fuchsia-50/50 to-pink-50/70 border-purple-200/80 shadow-sm"
-            : "bg-gray-50 border-gray-200"
+            ? "bg-gradient-to-r from-purple-50/80 via-white to-fuchsia-50/60 border-purple-200 shadow-sm"
+            : "bg-gray-50/90 border-gray-200"
         }`}
       >
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3.5 min-w-0">
             <div
-              className={`p-2.5 rounded-xl shrink-0 ${
+              className={`w-11 h-11 rounded-xl shrink-0 flex items-center justify-center transition-colors ${
                 isExportReady
-                  ? "bg-[#6A1B9A] text-white shadow-md shadow-purple-500/20"
+                  ? "bg-[#6A1B9A] text-white shadow-md shadow-purple-500/25"
                   : "bg-gray-200 text-gray-400"
               }`}
             >
               <Download className="w-5 h-5" />
             </div>
-            <div>
-              <h4 className="font-bold text-sm text-gray-900 flex items-center gap-2">
-                Attestation de Simulation (PDF)
+
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2.5 flex-wrap mb-1">
+                <h4 className="font-bold text-sm sm:text-base text-gray-900 leading-tight">
+                  Attestation de Simulation
+                </h4>
                 {isExportReady ? (
-                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-semibold">
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 whitespace-nowrap shrink-0 border border-emerald-200/60 shadow-xs">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse" />
                     Prêt à télécharger
                   </span>
                 ) : (
-                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 font-semibold">
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800 whitespace-nowrap shrink-0 border border-amber-200/60">
                     Champs incomplets
                   </span>
                 )}
-              </h4>
-              <p className="text-xs text-gray-500 mt-0.5">
+              </div>
+              <p className="text-xs text-gray-500 leading-relaxed">
                 {isExportReady
-                  ? "Tous les champs obligatoires sont validés. Visualisez l'aperçu et téléchargez votre attestation PDF."
+                  ? "Tous les champs obligatoires sont validés. Ouvrez l'aperçu et téléchargez votre fiche officielle au format PDF A4."
                   : "Complétez les informations client (téléphone, type client, revenu, prix, durée) pour télécharger le PDF."}
               </p>
             </div>
@@ -204,7 +208,7 @@ export default function Tab3DetailSimulation({
             type="button"
             onClick={onExportPdf}
             disabled={!isExportReady}
-            className={`px-4 py-2.5 rounded-xl font-semibold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all shrink-0 ${
+            className={`px-5 py-2.5 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 transition-all shrink-0 whitespace-nowrap ${
               isExportReady
                 ? "bg-gradient-to-r from-[#8A1C86] to-[#6A1B9A] hover:from-[#761673] hover:to-[#571480] text-white shadow-md hover:shadow-lg active:scale-[0.98] cursor-pointer"
                 : "bg-gray-200 text-gray-400 cursor-not-allowed border border-gray-300 opacity-60"
