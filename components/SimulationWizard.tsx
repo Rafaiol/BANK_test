@@ -78,6 +78,9 @@ export default function SimulationWizard({ data }: SimulationWizardProps) {
   const [isSaving, setIsSaving] = useState(false);
   const [isPdfModalOpen, setIsPdfModalOpen] = useState(false);
 
+  // Check if chosen category is "Meuble"
+  const isMeuble = (selectedCategorie || "").toLowerCase().trim() === "meuble";
+
   // ─── Derived taux profit ────────────────────────────────────
   const tauxProfit = useMemo(() => {
     const tc = data.typesClient.find((t) => t.NOM_TYPE_CLIENT === typeClient);
@@ -85,8 +88,9 @@ export default function SimulationWizard({ data }: SimulationWizardProps) {
   }, [data.typesClient, typeClient]);
 
   // ─── Live calculation ───────────────────────────────────────
+  // Rejects revenu lower than 36 000 DA
   const results: SimulationResults = useMemo(() => {
-    if (!revenu || !dureeMois || !tauxProfit || !price) {
+    if (!revenu || revenu < 36000 || !dureeMois || !tauxProfit || !price) {
       return {
         mensualiteMax: 0,
         capaciteEndettement: 0,
@@ -108,7 +112,9 @@ export default function SimulationWizard({ data }: SimulationWizardProps) {
       missing.push("N° Téléphone valide (05, 06 ou 07)");
     }
     if (!typeClient) missing.push("Type de client");
-    if (!revenu || revenu <= 0) missing.push("Revenu mensuel");
+    if (!revenu || revenu < 36000) {
+      missing.push("Revenu mensuel (min. 36 000 DA)");
+    }
     if (!price || price <= 0) missing.push("Prix du produit");
     if (!dureeMois || dureeMois <= 0) missing.push("Durée (mois)");
 
@@ -132,7 +138,8 @@ export default function SimulationWizard({ data }: SimulationWizardProps) {
 
   // ─── PDV string for saving ──────────────────────────────────
   const pdvString = useMemo(() => {
-    if (!selectedAgence || !selectedCategorie || !selectedMarque) return "";
+    if (!selectedAgence || !selectedCategorie) return "";
+    if (!isMeuble && !selectedMarque) return "";
     const coveredWilayas = data.couverture
       .filter((c) => c.CODE_AGENCE === selectedAgence)
       .map((c) => c.WILAYA.toLowerCase());
@@ -140,12 +147,12 @@ export default function SimulationWizard({ data }: SimulationWizardProps) {
       (p) =>
         coveredWilayas.includes(p.Wilaya.toLowerCase()) &&
         p.CATEGORIE.toLowerCase() === selectedCategorie.toLowerCase() &&
-        (p.MARQUE.toLowerCase() === selectedMarque.toLowerCase() || p.MARQUE === ""),
+        (isMeuble || p.MARQUE.toLowerCase() === selectedMarque.toLowerCase() || p.MARQUE === ""),
     );
     return matching
       .map((p) => `🏬 ${p.Commercial} | 📍 ${p.Adresse} (${p.Wilaya}) | 📞 ${p.Telephone}`)
       .join("\n");
-  }, [data.couverture, data.pdvs, selectedAgence, selectedCategorie, selectedMarque]);
+  }, [data.couverture, data.pdvs, selectedAgence, selectedCategorie, selectedMarque, isMeuble]);
 
   // ─── Validation ─────────────────────────────────────────────
   function validate() {
@@ -160,7 +167,14 @@ export default function SimulationWizard({ data }: SimulationWizardProps) {
     }
 
     if (!typeClient) errs.typeClient = "Veuillez sélectionner un type de client.";
-    if (!revenu || revenu <= 0) errs.revenu = "Le revenu doit être supérieur à 0.";
+    
+    // Revenu test: must be >= 36 000 DA
+    if (!revenu || revenu <= 0) {
+      errs.revenu = "Le revenu doit être supérieur ou égal à 36 000 DA.";
+    } else if (revenu < 36000) {
+      errs.revenu = "Le revenu doit être supérieur ou égal à 36 000 DA.";
+    }
+
     if (!dureeMois) errs.dureeMois = "Veuillez sélectionner une durée.";
     if (!price || price <= 0) errs.price = "Le prix doit être supérieur à 0.";
 
@@ -169,11 +183,33 @@ export default function SimulationWizard({ data }: SimulationWizardProps) {
 
   // ─── Tab navigation ─────────────────────────────────────────
   function goTo(next: Tab) {
+    // If attempting to leave Tab 0 with invalid revenu, block navigation (no popup, inline red message only)
+    if (tab === 0 && next > 0) {
+      if (!revenu || revenu < 36000) {
+        setErrors((prev) => ({
+          ...prev,
+          revenu: "Le revenu doit être supérieur ou égal à 36 000 DA.",
+        }));
+        return;
+      }
+    }
+
     setDirection(next > tab ? 1 : -1);
     setTab(next);
   }
 
   function handleNext() {
+    if (tab === 0) {
+      // Validate Tab 0 requirements (no popup for revenu, inline red error only)
+      if (!revenu || revenu < 36000) {
+        setErrors((prev) => ({
+          ...prev,
+          revenu: "Le revenu doit être supérieur ou égal à 36 000 DA.",
+        }));
+        return;
+      }
+    }
+
     if (tab === 2) return;
     goTo((tab + 1) as Tab);
   }
@@ -204,7 +240,9 @@ export default function SimulationWizard({ data }: SimulationWizardProps) {
     setErrors(errs);
 
     if (Object.keys(errs).length > 0) {
-      setToast({ message: "Veuillez corriger les erreurs avant de sauvegarder.", type: "error" });
+      if (!errs.revenu) {
+        setToast({ message: "Veuillez corriger les erreurs avant de sauvegarder.", type: "error" });
+      }
       // Navigate to first tab with error
       if (errs.telephone || errs.typeClient || errs.revenu || errs.price || errs.dureeMois) {
         goTo(0);
@@ -225,7 +263,7 @@ export default function SimulationWizard({ data }: SimulationWizardProps) {
         dureeMois,
         agence: agenceName,
         categorie: selectedCategorie,
-        marque: selectedMarque,
+        marque: isMeuble ? "" : selectedMarque,
         produit: selectedProduits.join(", "),
         price,
         pointsDeVente: pdvString,
@@ -261,28 +299,27 @@ export default function SimulationWizard({ data }: SimulationWizardProps) {
   }, [telephone, typeClient, revenu, dureeMois, price, touched]);
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-6">
+    <div className="w-full max-w-2xl mx-auto px-3 sm:px-4 py-4 sm:py-6">
       {/* Tab header */}
-      <div className="flex gap-1 mb-6 bg-gray-100 rounded-2xl p-1 shadow-inner">
+      <div className="flex gap-1 mb-4 sm:mb-6 bg-gray-100 rounded-2xl p-1 shadow-inner">
         {TAB_LABELS.map(({ label, icon: Icon }, idx) => (
           <button
             key={idx}
             onClick={() => goTo(idx as Tab)}
-            className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold transition-all ${
+            className={`flex-1 flex items-center justify-center gap-1 sm:gap-1.5 py-2 px-1 rounded-xl font-semibold transition-all cursor-pointer ${
               tab === idx
-                ? "bg-white text-[#6A1B9A] shadow-sm"
+                ? "bg-white text-[#6A1B9A] shadow-xs"
                 : "text-gray-500 hover:text-gray-700"
             }`}
           >
-            <Icon className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">{label}</span>
-            <span className="sm:hidden">{idx + 1}</span>
+            <Icon className="w-3.5 h-3.5 shrink-0" />
+            <span className="text-[11px] sm:text-xs truncate">{label}</span>
           </button>
         ))}
       </div>
 
       {/* Animated tab content */}
-      <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-5 min-h-[420px] overflow-hidden">
+      <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-3.5 sm:p-5 min-h-[380px] sm:min-h-[420px] overflow-hidden">
         <AnimatePresence mode="wait" custom={direction}>
           <motion.div
             key={tab}

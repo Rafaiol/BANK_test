@@ -50,7 +50,7 @@ export default function HomePage() {
     <div className="min-h-screen flex flex-col bg-gray-50">
       <Navbar activeView={view} onViewChange={setView} />
 
-      <main className="flex-1">
+      <main className="flex-1 w-full max-w-full overflow-x-hidden">
         {view === "simulation" && (
           <SimulationWizard
             data={{

@@ -20,79 +20,85 @@ export default function CheckListView({ items }: CheckListViewProps) {
   }, [items, query]);
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-6 space-y-4">
-      {/* Header */}
-      <div className="flex items-center gap-3 mb-2">
-        <div className="p-2 bg-purple-100 rounded-lg">
-          <FileText className="w-5 h-5 text-[#6A1B9A]" />
+    <div className="w-full max-w-4xl mx-auto px-3 sm:px-4 py-4 sm:py-6 space-y-3 sm:space-y-4">
+      {/* Compact Responsive Header */}
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2 sm:gap-2.5">
+          <div className="p-1.5 sm:p-2 bg-purple-100 rounded-lg shrink-0">
+            <FileText className="w-4 h-4 sm:w-5 sm:h-5 text-[#6A1B9A]" />
+          </div>
+          <div>
+            <h2 className="text-base sm:text-lg font-bold text-gray-800 leading-tight">
+              Check-List
+            </h2>
+            <p className="text-[11px] sm:text-xs text-gray-500">
+              Documents requis — الوثائق المطلوبة
+            </p>
+          </div>
         </div>
-        <div>
-          <h2 className="text-xl font-bold text-gray-800">Check-List</h2>
-          <p className="text-sm text-gray-500">
-            Documents requis — الوثائق المطلوبة
-          </p>
-        </div>
+
+        {/* Counter badge */}
+        <span className="text-[11px] sm:text-xs font-semibold px-2.5 py-1 bg-purple-50 text-[#6A1B9A] rounded-full border border-purple-100 shrink-0">
+          {filtered.length} / {items.length} doc{items.length > 1 ? "s" : ""}
+        </span>
       </div>
 
-      {/* Search */}
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+      {/* Search Bar */}
+      <div className="relative w-full">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
         <input
           type="text"
-          placeholder="Search Check-List / بحث..."
+          placeholder="Rechercher un document / بحث في الوثائق..."
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          className="w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-xl bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-400 text-sm"
+          className="w-full pl-9 pr-4 py-2 sm:py-2.5 border border-gray-200 rounded-xl bg-white shadow-xs focus:outline-none focus:ring-2 focus:ring-purple-400 text-xs sm:text-sm"
         />
       </div>
 
-      {/* Items */}
-      <div className="space-y-3">
-        {filtered.length === 0 ? (
-          <p className="text-center text-gray-400 py-8 text-sm">
-            Aucun résultat / لا توجد نتائج
+      {/* Responsive Grid — 1 column on mobile, 2 columns on desktop */}
+      {filtered.length === 0 ? (
+        <div className="bg-white rounded-xl border border-gray-100 p-8 text-center">
+          <p className="text-gray-400 text-xs sm:text-sm">
+            Aucun document trouvé / لا توجد نتائج
           </p>
-        ) : (
-          filtered.map((item, idx) => (
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 sm:gap-3">
+          {filtered.map((item, idx) => (
             <div
               key={idx}
-              className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden"
+              className="bg-white rounded-xl shadow-xs border border-gray-150 p-3.5 sm:p-4 hover:border-purple-300 hover:shadow-sm transition-all flex items-start gap-3"
             >
-              {/* French */}
-              <div className="flex items-start gap-3 px-4 py-3 border-b border-gray-50">
-                <CheckCircle2 className="w-4 h-4 text-[#6A1B9A] mt-0.5 shrink-0" />
-                <div>
-                  <span className="text-[10px] font-semibold text-purple-500 uppercase tracking-wide block mb-0.5">
-                    Français
-                  </span>
-                  <p className="text-sm text-gray-700 leading-relaxed">{item.fr}</p>
-                </div>
+              {/* Number Badge */}
+              <div className="w-6 h-6 rounded-full bg-purple-100 text-[#6A1B9A] flex items-center justify-center shrink-0 mt-0.5 text-xs font-bold">
+                {idx + 1}
               </div>
-              {/* Arabic */}
-              <div className="flex items-start gap-3 px-4 py-3 flex-row-reverse bg-purple-50/40">
-                <CheckCircle2 className="w-4 h-4 text-[#8A1C86] mt-0.5 shrink-0" />
-                <div className="text-right flex-1">
-                  <span className="text-[10px] font-semibold text-purple-500 uppercase tracking-wide block mb-0.5">
-                    العربية
-                  </span>
-                  <p
-                    className="text-sm text-gray-700 leading-relaxed"
-                    dir="rtl"
-                  >
-                    {item.ar}
-                  </p>
-                </div>
-              </div>
-            </div>
-          ))
-        )}
-      </div>
 
-      {/* Count */}
-      <p className="text-center text-xs text-gray-400">
-        {filtered.length} / {items.length} document
-        {items.length !== 1 ? "s" : ""}
-      </p>
+              {/* Document Text: French & Large Arabic */}
+              <div className="flex-1 min-w-0 space-y-1.5">
+                {/* French text */}
+                <p className="text-xs sm:text-sm font-semibold text-gray-800 leading-snug">
+                  {item.fr}
+                </p>
+
+                {/* Arabic text — Significantly larger, clear and bold */}
+                <p
+                  className="text-sm sm:text-base md:text-[17px] font-bold text-purple-950 leading-relaxed text-right pt-1.5 border-t border-purple-50"
+                  dir="rtl"
+                  style={{
+                    fontFamily:
+                      "system-ui, -apple-system, Tahoma, 'Noto Sans Arabic', 'Segoe UI', Arial, sans-serif",
+                  }}
+                >
+                  {item.ar}
+                </p>
+              </div>
+
+              <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-500 shrink-0 mt-0.5" />
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

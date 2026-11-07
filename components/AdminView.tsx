@@ -23,6 +23,7 @@ import {
   RefreshCw,
 } from "lucide-react";
 import Toast from "@/components/Toast";
+import BrandLogo from "@/components/BrandLogo";
 import type {
   Agence,
   CouvertureAgence,
@@ -238,7 +239,7 @@ export default function AdminView({ initialData, onDataUpdated }: AdminViewProps
   }, [activeTable, tablesData, simulations, search]);
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-6 space-y-6">
+    <div className="w-full max-w-6xl mx-auto px-3 sm:px-4 py-4 sm:py-6 space-y-4 sm:space-y-6">
       {/* Top Header Card */}
       <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-5">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -606,14 +607,19 @@ export default function AdminView({ initialData, onDataUpdated }: AdminViewProps
                     {activeTable === "marques" && (
                       <>
                         <td className="px-4 py-1.5">
-                          <input
-                            type="text"
-                            value={row.MARQUE}
-                            onChange={(e) =>
-                              handleCellChange(idx, "MARQUE", e.target.value)
-                            }
-                            className="w-full px-2 py-1 rounded border border-gray-200 focus:outline-none focus:border-purple-400 bg-white"
-                          />
+                          <div className="flex items-center gap-2">
+                            <div className="h-6 w-16 flex items-center justify-center shrink-0 bg-white border border-gray-100 rounded px-1">
+                              <BrandLogo brand={row.MARQUE} size="sm" />
+                            </div>
+                            <input
+                              type="text"
+                              value={row.MARQUE}
+                              onChange={(e) =>
+                                handleCellChange(idx, "MARQUE", e.target.value)
+                              }
+                              className="w-full px-2 py-1 rounded border border-gray-200 focus:outline-none focus:border-purple-400 bg-white font-medium"
+                            />
+                          </div>
                         </td>
                         <td className="px-4 py-1.5">
                           <input

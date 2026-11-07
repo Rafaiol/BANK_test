@@ -36,29 +36,29 @@ interface ResultCardProps {
 function ResultCard({ icon, label, value, highlight, description }: ResultCardProps) {
   return (
     <div
-      className={`flex items-center justify-between p-4 rounded-xl border ${
+      className={`flex items-center justify-between p-3 sm:p-4 rounded-xl border ${
         highlight
           ? "border-[#6A1B9A]/30 bg-gradient-to-r from-purple-50 to-violet-50"
           : "border-gray-100 bg-white"
-      } shadow-sm`}
+      } shadow-2xs gap-2`}
     >
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
         <div
-          className={`p-2 rounded-lg ${
+          className={`p-1.5 sm:p-2 rounded-lg shrink-0 ${
             highlight ? "bg-[#6A1B9A]/10" : "bg-gray-100"
           }`}
         >
           {icon}
         </div>
-        <div>
-          <p className="text-xs text-gray-500 leading-none mb-1">{label}</p>
+        <div className="min-w-0">
+          <p className="text-xs sm:text-sm text-gray-700 font-medium leading-tight truncate">{label}</p>
           {description && (
-            <p className="text-[10px] text-gray-400">{description}</p>
+            <p className="text-[10px] sm:text-xs text-gray-400 truncate">{description}</p>
           )}
         </div>
       </div>
       <span
-        className={`text-base font-bold tabular-nums ${
+        className={`text-sm sm:text-base font-bold tabular-nums shrink-0 ${
           highlight ? "text-[#6A1B9A]" : "text-gray-800"
         }`}
       >
@@ -84,8 +84,10 @@ export default function Tab3DetailSimulation({
   missingFields = [],
 }: Tab3DetailSimulationProps) {
   // PDV filtering (same logic as Tab 2)
+  const isMeuble = (selectedCategorie || "").toLowerCase().trim() === "meuble";
   const filteredPDVs = React.useMemo((): PointDeVente[] => {
-    if (!selectedAgence || !selectedCategorie || !selectedMarque) return [];
+    if (!selectedAgence || !selectedCategorie) return [];
+    if (!isMeuble && !selectedMarque) return [];
     const coveredWilayas = couverture
       .filter((c) => c.CODE_AGENCE === selectedAgence)
       .map((c) => c.WILAYA.toLowerCase());
@@ -93,34 +95,35 @@ export default function Tab3DetailSimulation({
       (pdv) =>
         coveredWilayas.includes(pdv.Wilaya.toLowerCase()) &&
         pdv.CATEGORIE.toLowerCase() === selectedCategorie.toLowerCase() &&
-        (pdv.MARQUE.toLowerCase() === selectedMarque.toLowerCase() ||
+        (isMeuble ||
+          pdv.MARQUE.toLowerCase() === selectedMarque.toLowerCase() ||
           pdv.MARQUE === ""),
     );
-  }, [pdvs, couverture, selectedAgence, selectedCategorie, selectedMarque]);
+  }, [pdvs, couverture, selectedAgence, selectedCategorie, selectedMarque, isMeuble]);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3 sm:space-y-4 w-full">
       {/* Summary banner */}
-      <div className="rounded-xl bg-gradient-to-r from-[#8A1C86] to-[#6A1B9A] p-4 text-white shadow-md">
-        <div className="flex items-center justify-between mb-2">
-          <div>
-            <p className="text-purple-200 text-xs">Type client</p>
-            <p className="font-semibold text-sm">{typeClient || "—"}</p>
+      <div className="rounded-xl bg-gradient-to-r from-[#8A1C86] to-[#6A1B9A] p-3.5 sm:p-4 text-white shadow-md">
+        <div className="flex items-center justify-between mb-2 gap-1">
+          <div className="min-w-0">
+            <p className="text-purple-200 text-[10px] sm:text-xs">Type client</p>
+            <p className="font-semibold text-xs sm:text-sm truncate">{typeClient || "—"}</p>
           </div>
-          <div className="text-right">
-            <p className="text-purple-200 text-xs">Durée</p>
-            <p className="font-semibold text-sm">{dureeMois} mois</p>
+          <div className="text-right shrink-0">
+            <p className="text-purple-200 text-[10px] sm:text-xs">Durée</p>
+            <p className="font-semibold text-xs sm:text-sm">{dureeMois} mois</p>
           </div>
-          <div className="text-right">
-            <p className="text-purple-200 text-xs">Taux</p>
-            <p className="font-semibold text-sm">
+          <div className="text-right shrink-0">
+            <p className="text-purple-200 text-[10px] sm:text-xs">Taux</p>
+            <p className="font-semibold text-xs sm:text-sm">
               {(tauxProfit * 100).toFixed(2).replace(".", ",")}%
             </p>
           </div>
         </div>
         <div className="border-t border-white/20 pt-2 mt-2 flex items-center justify-between">
           <p className="text-purple-200 text-xs">Prix demandé</p>
-          <p className="font-bold text-lg">{formatDZD(price)}</p>
+          <p className="font-bold text-base sm:text-lg">{formatDZD(price)}</p>
         </div>
       </div>
 

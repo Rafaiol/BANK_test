@@ -133,45 +133,46 @@ export default function SimulationPdfModal({
   return (
     <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4 overflow-hidden">
       {/* Modal Dialog Card */}
-      <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full h-[94vh] max-h-[920px] flex flex-col overflow-hidden border border-gray-200">
+      <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full h-[96vh] sm:h-[94vh] max-h-[920px] flex flex-col overflow-hidden border border-gray-200">
         {/* Top Control Bar */}
-        <div className="flex items-center justify-between px-6 py-3.5 bg-gray-50 border-b border-gray-200 shrink-0 z-10">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-[#6A1B9A]/10 text-[#6A1B9A] rounded-lg">
-              <Eye className="w-5 h-5" />
+        <div className="flex items-center justify-between px-3 sm:px-6 py-2.5 sm:py-3.5 bg-gray-50 border-b border-gray-200 shrink-0 z-10 gap-2">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+            <div className="p-1.5 sm:p-2 bg-[#6A1B9A]/10 text-[#6A1B9A] rounded-lg shrink-0">
+              <Eye className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
-            <div>
-              <h3 className="font-bold text-gray-900 text-sm sm:text-base leading-tight">
-                Aperçu de la Fiche de Simulation
+            <div className="min-w-0">
+              <h3 className="font-bold text-gray-900 text-xs sm:text-base leading-tight truncate">
+                Fiche de Simulation
               </h3>
-              <p className="text-xs text-gray-500">
+              <p className="text-[11px] text-gray-500 hidden sm:block">
                 Document officiel A4 prêt pour le téléchargement
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
             <button
               onClick={handleDownloadPdf}
               disabled={isDownloading}
-              className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-[#8A1C86] to-[#6A1B9A] hover:from-[#761673] hover:to-[#571480] text-white rounded-xl font-semibold text-xs sm:text-sm shadow-md hover:shadow-lg transition-all disabled:opacity-70 cursor-pointer"
+              className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2 sm:py-2.5 bg-gradient-to-r from-[#8A1C86] to-[#6A1B9A] hover:from-[#761673] hover:to-[#571480] text-white rounded-xl font-semibold text-xs sm:text-sm shadow-md hover:shadow-lg transition-all disabled:opacity-70 cursor-pointer"
             >
               {isDownloading ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  Génération haute qualité…
+                  <span className="hidden sm:inline">Génération…</span>
                 </>
               ) : (
                 <>
-                  <Download className="w-4 h-4" />
-                  Télécharger en PDF
+                  <Download className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                  <span className="hidden sm:inline">Télécharger en PDF</span>
+                  <span className="sm:hidden">Télécharger</span>
                 </>
               )}
             </button>
 
             <button
               onClick={onClose}
-              className="p-2 text-gray-400 hover:text-gray-700 rounded-xl hover:bg-gray-100 transition-colors cursor-pointer"
+              className="p-1.5 sm:p-2 text-gray-400 hover:text-gray-700 rounded-xl hover:bg-gray-100 transition-colors cursor-pointer shrink-0"
               title="Fermer"
             >
               <X className="w-5 h-5" />
@@ -319,7 +320,9 @@ export default function SimulationPdfModal({
                         Marque
                       </span>
                       <span className="font-semibold text-gray-900 text-xs">
-                        {selectedMarque || "Non spécifiée"}
+                        {(selectedCategorie || "").toLowerCase().trim() === "meuble"
+                          ? "— (Non requise)"
+                          : selectedMarque || "Non spécifiée"}
                       </span>
                     </div>
                     <div>
