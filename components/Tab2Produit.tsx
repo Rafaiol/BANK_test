@@ -3,7 +3,7 @@
 import React, { useMemo } from "react";
 import PDVTable from "@/components/PDVTable";
 import BrandLogo from "@/components/BrandLogo";
-import { Check, X, Sparkles } from "lucide-react";
+import { Check, X, Sparkles, Store } from "lucide-react";
 import type {
   Agence,
   Categorie,
@@ -52,16 +52,16 @@ export default function Tab2Produit({
   // Check if chosen category is "Meuble" (furniture)
   const isMeuble = (selectedCategorie || "").toLowerCase().trim() === "meuble";
 
-  // Filter brands by selected category
+  // Filter brands: ONLY show when BOTH agence and category are selected
   const filteredMarques = useMemo(() => {
-    if (!selectedCategorie) return marques;
+    if (!selectedAgence || !selectedCategorie) return [];
     if (isMeuble) return []; // No brands for Meuble
     const catProds = produits.filter(
       (p) => p.CATEGORIE.toLowerCase() === selectedCategorie.toLowerCase(),
     );
     const brandSet = new Set(catProds.map((p) => p.MARQUE));
     return marques.filter((m) => brandSet.has(m.MARQUE) || brandSet.has(""));
-  }, [marques, produits, selectedCategorie, isMeuble]);
+  }, [marques, produits, selectedAgence, selectedCategorie, isMeuble]);
 
   // Filter product generics by category + brand (or category alone for Meuble)
   const filteredProduits = useMemo(() => {
@@ -130,6 +130,25 @@ export default function Tab2Produit({
 
   return (
     <div className="space-y-4 sm:space-y-5 w-full">
+      {/* Header for Nos Partenaires */}
+      <div className="bg-gradient-to-r from-purple-50 via-slate-50 to-white p-3.5 sm:p-4 rounded-2xl border border-purple-100 flex items-start gap-3">
+        <div className="p-2 sm:p-2.5 rounded-xl bg-purple-100 text-[#6A1B9A] shrink-0">
+          <Store className="w-5 h-5" />
+        </div>
+        <div className="min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
+            <h3 className="text-sm sm:text-base font-bold text-gray-900 leading-tight">
+              Nos Partenaires & Points de Vente
+            </h3>
+            <span className="text-[10px] font-semibold bg-purple-100 text-[#6A1B9A] px-2 py-0.5 rounded-full">
+              Facultatif
+            </span>
+          </div>
+          <p className="text-xs text-gray-500 mt-1 leading-relaxed">
+            Consultez les marques conventionnées et les points de vente agréés couverts par nos agences.
+          </p>
+        </div>
+      </div>
       {/* AGENCE — Optional */}
       <div className="space-y-1">
         <label className="block text-xs sm:text-sm font-medium text-gray-700">
@@ -140,7 +159,11 @@ export default function Tab2Produit({
         </label>
         <select
           value={selectedAgence}
-          onChange={(e) => onAgenceChange(e.target.value)}
+          onChange={(e) => {
+            onAgenceChange(e.target.value);
+            onMarqueChange("");
+            onProduitsChange([]);
+          }}
           className="w-full px-3.5 py-2 sm:py-2.5 border border-gray-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-purple-400 bg-white"
         >
           <option value="">— Sélectionner une agence —</option>
@@ -204,8 +227,26 @@ export default function Tab2Produit({
             )}
           </div>
 
-          {/* Visual Brand Selector with Authentic Brand Logos */}
-          {filteredMarques.length > 0 ? (
+          {/* Brand Selector — Only when BOTH agence and category are selected */}
+          {!selectedAgence && !selectedCategorie ? (
+            <div className="p-3.5 sm:p-4 rounded-xl border border-dashed border-gray-200 bg-gray-50/80 text-center">
+              <p className="text-xs text-gray-500">
+                Veuillez sélectionner une <strong>agence</strong> et une <strong>catégorie</strong> pour afficher les marques partenaires disponibles.
+              </p>
+            </div>
+          ) : !selectedAgence ? (
+            <div className="p-3.5 sm:p-4 rounded-xl border border-dashed border-gray-200 bg-gray-50/80 text-center">
+              <p className="text-xs text-gray-500">
+                Veuillez sélectionner une <strong>agence</strong> pour afficher les marques disponibles.
+              </p>
+            </div>
+          ) : !selectedCategorie ? (
+            <div className="p-3.5 sm:p-4 rounded-xl border border-dashed border-gray-200 bg-gray-50/80 text-center">
+              <p className="text-xs text-gray-500">
+                Veuillez sélectionner une <strong>catégorie</strong> pour afficher les marques disponibles.
+              </p>
+            </div>
+          ) : filteredMarques.length > 0 ? (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-2.5">
               {filteredMarques.map((m) => {
                 const isSelected = selectedMarque === m.MARQUE;
@@ -214,11 +255,10 @@ export default function Tab2Produit({
                     key={m.MARQUE}
                     type="button"
                     onClick={() => handleBrandSelect(m.MARQUE)}
-                    className={`relative flex flex-col items-center justify-center p-2.5 sm:p-3 rounded-xl border-2 transition-all cursor-pointer text-center group bg-white ${
-                      isSelected
+                    className={`relative flex flex-col items-center justify-center p-2.5 sm:p-3 rounded-xl border-2 transition-all cursor-pointer text-center group bg-white ${isSelected
                         ? "border-[#6A1B9A] bg-purple-50/50 shadow-xs ring-2 ring-purple-200"
                         : "border-gray-200 hover:border-purple-300 hover:shadow-xs"
-                    }`}
+                      }`}
                   >
                     {/* Active check pill */}
                     {isSelected && (
@@ -233,9 +273,8 @@ export default function Tab2Produit({
                     </div>
 
                     <span
-                      className={`text-[11px] sm:text-xs font-semibold truncate w-full ${
-                        isSelected ? "text-[#6A1B9A]" : "text-gray-700"
-                      }`}
+                      className={`text-[11px] sm:text-xs font-semibold truncate w-full ${isSelected ? "text-[#6A1B9A]" : "text-gray-700"
+                        }`}
                     >
                       {m.MARQUE}
                     </span>
@@ -244,9 +283,11 @@ export default function Tab2Produit({
               })}
             </div>
           ) : (
-            <p className="text-xs text-gray-400 italic">
-              Veuillez sélectionner une catégorie pour voir les marques associées.
-            </p>
+            <div className="p-3.5 sm:p-4 rounded-xl border border-dashed border-gray-200 bg-gray-50 text-center">
+              <p className="text-xs text-gray-400 italic">
+                Aucune marque trouvée pour cette catégorie dans cette agence.
+              </p>
+            </div>
           )}
 
           {/* Selected Brand Banner */}
@@ -277,11 +318,10 @@ export default function Tab2Produit({
                 key={prod}
                 type="button"
                 onClick={() => toggleProduit(prod)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium border-2 transition-all cursor-pointer ${
-                  selectedProduits.includes(prod)
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium border-2 transition-all cursor-pointer ${selectedProduits.includes(prod)
                     ? "border-[#6A1B9A] bg-[#6A1B9A] text-white shadow-xs"
                     : "border-gray-200 text-gray-700 hover:border-purple-300 hover:bg-purple-50"
-                }`}
+                  }`}
               >
                 {prod}
               </button>

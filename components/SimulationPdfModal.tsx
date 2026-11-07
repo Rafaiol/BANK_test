@@ -21,6 +21,7 @@ import type { SimulationResults } from "@/lib/calculations";
 import type { PointDeVente, Agence, CheckListItem } from "@/data/fallbackData";
 import { toPng } from "html-to-image";
 import jsPDF from "jspdf";
+import SmileLogo from "@/components/SmileLogo";
 
 interface SimulationPdfModalProps {
   isOpen: boolean;
@@ -203,17 +204,20 @@ export default function SimulationPdfModal({
                 <div className="border-b-2 border-[#6A1B9A] pb-3">
                   <div className="flex items-start justify-between">
                     <div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-2xl font-black text-[#6A1B9A]">
-                          Smile
-                        </span>
-                        <span
-                          className="text-xl font-bold text-[#8A1C86]"
-                          dir="rtl"
-                          style={{ fontFamily: "Tahoma, Arial, sans-serif" }}
-                        >
-                          البديل
-                        </span>
+                      <div className="flex items-center gap-2.5">
+                        <SmileLogo size={36} withShadow={false} />
+                        <div className="flex items-center gap-2">
+                          <span className="text-2xl font-black text-[#6A1B9A]">
+                            Smile
+                          </span>
+                          <span
+                            className="text-xl font-bold text-[#8A1C86]"
+                            dir="rtl"
+                            style={{ fontFamily: "Tahoma, Arial, sans-serif" }}
+                          >
+                            البديل
+                          </span>
+                        </div>
                       </div>
                       <p className="text-[11px] font-bold text-gray-700 tracking-normal mt-0.5">
                         Banque Al Baraka d&apos;Algérie —{" "}
@@ -440,8 +444,8 @@ export default function SimulationPdfModal({
                   {/* Ratios Footnote */}
                   <div className="flex items-center justify-between mt-1.5 px-1 text-[10px] text-gray-600">
                     <span>
-                      Capacité d&apos;endettement max (30% salaire) :{" "}
-                      <strong className="text-gray-900">{formatDZD(results.capaciteEndettement)}</strong>
+                      Mensualité max admissible (30% salaire) :{" "}
+                      <strong className="text-gray-900">{formatDZD(results.mensualiteMax)}</strong>
                     </span>
                     <span>
                       Ratio d&apos;endettement réel :{" "}

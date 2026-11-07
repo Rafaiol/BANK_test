@@ -28,6 +28,7 @@ export async function POST(req: NextRequest) {
       dureeMois: Number(dureeMois),
       tauxProfit: Number(tauxProfit),
       price: Number(price),
+      categorie: body.categorie ? String(body.categorie) : undefined,
     });
 
     // ─── Build row ────────────────────────────────────────────

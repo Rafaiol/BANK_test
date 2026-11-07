@@ -2,13 +2,21 @@
 
 import React, { useState, useMemo, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronRight, ChevronLeft, RotateCcw, Save, User, Package, Calculator } from "lucide-react";
+import {
+  ChevronRight,
+  ChevronLeft,
+  RotateCcw,
+  Save,
+  User,
+  Calculator,
+  Store,
+} from "lucide-react";
 import Tab1InfoClient from "@/components/Tab1InfoClient";
 import Tab2Produit from "@/components/Tab2Produit";
 import Tab3DetailSimulation from "@/components/Tab3DetailSimulation";
 import SimulationPdfModal from "@/components/SimulationPdfModal";
 import Toast from "@/components/Toast";
-import { calculate, formatRate } from "@/lib/calculations";
+import { calculate } from "@/lib/calculations";
 import type { SimulationResults } from "@/lib/calculations";
 import type {
   Agence,
@@ -38,8 +46,8 @@ type Tab = 0 | 1 | 2;
 
 const TAB_LABELS = [
   { label: "Info Client", icon: User },
-  { label: "Produit", icon: Package },
   { label: "Détail Simulation", icon: Calculator },
+  { label: "Nos Partenaires", icon: Store },
 ];
 
 const slideVariants = {
@@ -100,8 +108,14 @@ export default function SimulationWizard({ data }: SimulationWizardProps) {
         mensualite: 0,
       };
     }
-    return calculate({ revenu, dureeMois, tauxProfit, price });
-  }, [revenu, dureeMois, tauxProfit, price]);
+    return calculate({
+      revenu,
+      dureeMois,
+      tauxProfit,
+      price,
+      categorie: selectedCategorie,
+    });
+  }, [revenu, dureeMois, tauxProfit, price, selectedCategorie]);
 
   // ─── PDF Export Readiness & Mandatory Fields Check ──────────
   const { isExportReady, missingFields } = useMemo(() => {
@@ -154,11 +168,25 @@ export default function SimulationWizard({ data }: SimulationWizardProps) {
       .join("\n");
   }, [data.couverture, data.pdvs, selectedAgence, selectedCategorie, selectedMarque, isMeuble]);
 
-  // ─── Validation ─────────────────────────────────────────────
-  function validate() {
+  // ─── Validation helper for Tab 0 ────────────────────────────
+  function validateTab0() {
     const errs: Record<string, string> = {};
+    if (!typeClient) errs.typeClient = "Veuillez sélectionner un type de client.";
+    if (!revenu || revenu <= 0) {
+      errs.revenu = "Le revenu doit être supérieur ou égal à 36 000 DA.";
+    } else if (revenu < 36000) {
+      errs.revenu = "Le revenu doit être supérieur ou égal à 36 000 DA.";
+    }
+    if (!dureeMois) errs.dureeMois = "Veuillez sélectionner une durée.";
+    if (!price || price <= 0) errs.price = "Le prix doit être supérieur à 0.";
+    return errs;
+  }
 
-    // Telephone: 10 digits starting with 05, 06, or 07
+  // ─── Full Validation ─────────────────────────────────────────
+  function validate() {
+    const errs = validateTab0();
+
+    // Telephone: 10 digits starting with 05, 06, or 07 (located on Tab 1)
     if (!telephone) {
       errs.telephone = "Le numéro de téléphone est obligatoire.";
     } else if (!/^(05|06|07)\d{8}$/.test(telephone)) {
@@ -166,30 +194,17 @@ export default function SimulationWizard({ data }: SimulationWizardProps) {
         "Format invalide. Doit commencer par 05, 06 ou 07 et contenir 10 chiffres.";
     }
 
-    if (!typeClient) errs.typeClient = "Veuillez sélectionner un type de client.";
-    
-    // Revenu test: must be >= 36 000 DA
-    if (!revenu || revenu <= 0) {
-      errs.revenu = "Le revenu doit être supérieur ou égal à 36 000 DA.";
-    } else if (revenu < 36000) {
-      errs.revenu = "Le revenu doit être supérieur ou égal à 36 000 DA.";
-    }
-
-    if (!dureeMois) errs.dureeMois = "Veuillez sélectionner une durée.";
-    if (!price || price <= 0) errs.price = "Le prix doit être supérieur à 0.";
-
     return errs;
   }
 
   // ─── Tab navigation ─────────────────────────────────────────
   function goTo(next: Tab) {
-    // If attempting to leave Tab 0 with invalid revenu, block navigation (no popup, inline red message only)
+    // If attempting to leave Tab 0, validate Tab 0 fields
     if (tab === 0 && next > 0) {
-      if (!revenu || revenu < 36000) {
-        setErrors((prev) => ({
-          ...prev,
-          revenu: "Le revenu doit être supérieur ou égal à 36 000 DA.",
-        }));
+      const errs0 = validateTab0();
+      if (Object.keys(errs0).length > 0) {
+        setTouched(true);
+        setErrors((prev) => ({ ...prev, ...errs0 }));
         return;
       }
     }
@@ -200,18 +215,20 @@ export default function SimulationWizard({ data }: SimulationWizardProps) {
 
   function handleNext() {
     if (tab === 0) {
-      // Validate Tab 0 requirements (no popup for revenu, inline red error only)
-      if (!revenu || revenu < 36000) {
-        setErrors((prev) => ({
-          ...prev,
-          revenu: "Le revenu doit être supérieur ou égal à 36 000 DA.",
-        }));
+      const errs0 = validateTab0();
+      if (Object.keys(errs0).length > 0) {
+        setTouched(true);
+        setErrors((prev) => ({ ...prev, ...errs0 }));
         return;
       }
+      goTo(1);
+      return;
     }
 
-    if (tab === 2) return;
-    goTo((tab + 1) as Tab);
+    if (tab === 1) {
+      goTo(2);
+      return;
+    }
   }
 
   function handlePrev() {
@@ -243,9 +260,11 @@ export default function SimulationWizard({ data }: SimulationWizardProps) {
       if (!errs.revenu) {
         setToast({ message: "Veuillez corriger les erreurs avant de sauvegarder.", type: "error" });
       }
-      // Navigate to first tab with error
-      if (errs.telephone || errs.typeClient || errs.revenu || errs.price || errs.dureeMois) {
+      // Navigate to tab containing error
+      if (errs.typeClient || errs.revenu || errs.price || errs.dureeMois) {
         goTo(0);
+      } else if (errs.telephone) {
+        goTo(1);
       }
       return;
     }
@@ -292,11 +311,45 @@ export default function SimulationWizard({ data }: SimulationWizardProps) {
     }
   }
 
-  // Live validate on field changes if already touched
+  // Live clear errors as fields are filled / corrected
   useEffect(() => {
-    if (touched) setErrors(validate());
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [telephone, typeClient, revenu, dureeMois, price, touched]);
+    setErrors((prev) => {
+      let changed = false;
+      const next = { ...prev };
+
+      // Clear typeClient error as soon as client chooses a type
+      if (typeClient && next.typeClient) {
+        delete next.typeClient;
+        changed = true;
+      }
+
+      // Clear revenu error as soon as revenu >= 36 000
+      if (revenu >= 36000 && next.revenu) {
+        delete next.revenu;
+        changed = true;
+      }
+
+      // Clear price error as soon as price > 0
+      if (price > 0 && next.price) {
+        delete next.price;
+        changed = true;
+      }
+
+      // Clear dureeMois error as soon as dureeMois > 0
+      if (dureeMois > 0 && next.dureeMois) {
+        delete next.dureeMois;
+        changed = true;
+      }
+
+      // Clear telephone error as soon as phone is valid (10 digits starting with 05, 06, 07)
+      if (telephone && /^(05|06|07)\d{8}$/.test(telephone) && next.telephone) {
+        delete next.telephone;
+        changed = true;
+      }
+
+      return changed ? next : prev;
+    });
+  }, [typeClient, revenu, price, dureeMois, telephone]);
 
   return (
     <div className="w-full max-w-2xl mx-auto px-3 sm:px-4 py-4 sm:py-6">
@@ -330,10 +383,9 @@ export default function SimulationWizard({ data }: SimulationWizardProps) {
             exit="exit"
             transition={{ duration: 0.22, ease: "easeInOut" }}
           >
+            {/* TAB 0: Info Client (Income, Price, Duration, Client Type) */}
             {tab === 0 && (
               <Tab1InfoClient
-                telephone={telephone}
-                onTelephoneChange={setTelephone}
                 typeClient={typeClient}
                 onTypeClientChange={setTypeClient}
                 revenu={revenu}
@@ -352,7 +404,33 @@ export default function SimulationWizard({ data }: SimulationWizardProps) {
                 }}
               />
             )}
+
+            {/* TAB 1: Détail Simulation (Phone Gate + Redesigned Financial Results + Note to Partners) */}
             {tab === 1 && (
+              <Tab3DetailSimulation
+                results={results}
+                price={price}
+                revenu={revenu}
+                typeClient={typeClient}
+                dureeMois={dureeMois}
+                tauxProfit={tauxProfit}
+                telephone={telephone}
+                onTelephoneChange={setTelephone}
+                telephoneError={errors.telephone}
+                onNavigateToPartners={() => goTo(2)}
+                selectedAgence={selectedAgence}
+                selectedCategorie={selectedCategorie}
+                selectedMarque={selectedMarque}
+                pdvs={data.pdvs}
+                couverture={data.couverture}
+                onExportPdf={() => setIsPdfModalOpen(true)}
+                isExportReady={isExportReady}
+                missingFields={missingFields}
+              />
+            )}
+
+            {/* TAB 2: Nos Partenaires (Formerly Produit, now 3rd page & optional) */}
+            {tab === 2 && (
               <Tab2Produit
                 agences={data.agences}
                 categories={data.categories}
@@ -370,43 +448,26 @@ export default function SimulationWizard({ data }: SimulationWizardProps) {
                 onProduitsChange={setSelectedProduits}
               />
             )}
-            {tab === 2 && (
-              <Tab3DetailSimulation
-                results={results}
-                price={price}
-                typeClient={typeClient}
-                dureeMois={dureeMois}
-                tauxProfit={tauxProfit}
-                selectedAgence={selectedAgence}
-                selectedCategorie={selectedCategorie}
-                selectedMarque={selectedMarque}
-                pdvs={data.pdvs}
-                couverture={data.couverture}
-                onExportPdf={() => setIsPdfModalOpen(true)}
-                isExportReady={isExportReady}
-                missingFields={missingFields}
-              />
-            )}
           </motion.div>
         </AnimatePresence>
       </div>
 
       {/* Bottom navigation */}
-      <div className="flex items-center gap-3 mt-4">
+      <div className="flex items-center gap-2 sm:gap-3 mt-4 flex-wrap">
         {/* Prev */}
         <button
           onClick={handlePrev}
           disabled={tab === 0}
-          className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-medium border border-gray-200 text-gray-600 disabled:opacity-30 hover:bg-gray-50 transition-all cursor-pointer"
+          className="flex items-center gap-1.5 px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-medium border border-gray-200 text-gray-600 disabled:opacity-30 hover:bg-gray-50 transition-all cursor-pointer"
         >
           <ChevronLeft className="w-4 h-4" />
-          Prev
+          Précédent
         </button>
 
         {/* Reset */}
         <button
           onClick={handleReset}
-          className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-medium border border-gray-200 text-gray-500 hover:bg-gray-50 hover:text-red-500 transition-all cursor-pointer"
+          className="flex items-center gap-1.5 px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-medium border border-gray-200 text-gray-500 hover:bg-gray-50 hover:text-red-500 transition-all cursor-pointer"
         >
           <RotateCcw className="w-3.5 h-3.5" />
           Reset
@@ -415,20 +476,54 @@ export default function SimulationWizard({ data }: SimulationWizardProps) {
         {/* Spacer */}
         <div className="flex-1" />
 
-        {/* Next or Save */}
-        {tab < 2 ? (
+        {/* Next & Save Actions */}
+        {tab === 0 && (
           <button
             onClick={handleNext}
-            className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl text-sm font-semibold bg-gradient-to-r from-[#8A1C86] to-[#6A1B9A] text-white shadow-md hover:shadow-lg hover:opacity-90 transition-all cursor-pointer"
+            className="flex items-center gap-1.5 px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-semibold bg-gradient-to-r from-[#8A1C86] to-[#6A1B9A] text-white shadow-md hover:shadow-lg hover:opacity-90 transition-all cursor-pointer"
           >
-            Next
+            Suivant : Détail Simulation
             <ChevronRight className="w-4 h-4" />
           </button>
-        ) : (
+        )}
+
+        {tab === 1 && (
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => goTo(2)}
+              className="flex items-center gap-1.5 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-semibold border-2 border-purple-200 text-[#6A1B9A] hover:bg-purple-50 hover:border-purple-300 transition-all cursor-pointer"
+            >
+              Nos Partenaires
+              <ChevronRight className="w-4 h-4" />
+            </button>
+            <button
+              onClick={handleSave}
+              disabled={isSaving}
+              className="flex items-center gap-1.5 px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-semibold bg-gradient-to-r from-[#8A1C86] to-[#6A1B9A] text-white shadow-md hover:shadow-lg hover:opacity-90 transition-all disabled:opacity-60 cursor-pointer"
+            >
+              {isSaving ? (
+                <>
+                  <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+                  </svg>
+                  Enregistrement…
+                </>
+              ) : (
+                <>
+                  <Save className="w-4 h-4" />
+                  Enregistrer
+                </>
+              )}
+            </button>
+          </div>
+        )}
+
+        {tab === 2 && (
           <button
             onClick={handleSave}
             disabled={isSaving}
-            className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl text-sm font-semibold bg-gradient-to-r from-[#8A1C86] to-[#6A1B9A] text-white shadow-md hover:shadow-lg hover:opacity-90 transition-all disabled:opacity-60 cursor-pointer"
+            className="flex items-center gap-1.5 px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-semibold bg-gradient-to-r from-[#8A1C86] to-[#6A1B9A] text-white shadow-md hover:shadow-lg hover:opacity-90 transition-all disabled:opacity-60 cursor-pointer"
           >
             {isSaving ? (
               <>

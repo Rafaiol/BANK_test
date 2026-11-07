@@ -13,8 +13,6 @@ interface FormErrors {
 }
 
 interface Tab1InfoClientProps {
-  telephone: string;
-  onTelephoneChange: (v: string) => void;
   typeClient: string;
   onTypeClientChange: (v: string) => void;
   revenu: number;
@@ -28,8 +26,6 @@ interface Tab1InfoClientProps {
 }
 
 export default function Tab1InfoClient({
-  telephone,
-  onTelephoneChange,
   typeClient,
   onTypeClientChange,
   revenu,
@@ -69,30 +65,6 @@ export default function Tab1InfoClient({
           readOnly
           className="w-full px-3.5 py-2 sm:py-2.5 border border-gray-200 rounded-xl bg-gray-50 text-gray-500 text-xs sm:text-sm cursor-not-allowed select-none"
         />
-      </div>
-
-      {/* TELEPHONE */}
-      <div className="space-y-1">
-        <label className="block text-xs sm:text-sm font-medium text-gray-700">
-          Téléphone <span className="text-red-500">*</span>
-          <span className="ml-1 text-[11px] text-gray-400">(Obligatoire)</span>
-        </label>
-        <input
-          type="tel"
-          value={telephone}
-          onChange={(e) => onTelephoneChange(e.target.value.replace(/[^0-9]/g, ""))}
-          maxLength={10}
-          placeholder="05 / 06 / 07 XX XX XX XX"
-          className={`w-full px-3.5 py-2 sm:py-2.5 border rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-purple-400 bg-white ${
-            errors.telephone
-              ? "border-red-400 ring-1 ring-red-300"
-              : "border-gray-200"
-          }`}
-        />
-        {errors.telephone && (
-          <p className="text-xs text-red-500 font-medium">{errors.telephone}</p>
-        )}
-        <p className="text-[11px] text-gray-400">Format: 0512345678 (10 chiffres)</p>
       </div>
 
       {/* TYPE CLIENT */}

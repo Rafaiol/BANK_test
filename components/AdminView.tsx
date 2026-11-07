@@ -5,7 +5,6 @@ import {
   Shield,
   Save,
   RotateCcw,
-  Plus,
   Trash2,
   ExternalLink,
   CheckCircle2,
@@ -21,6 +20,7 @@ import {
   FileCheck,
   History,
   RefreshCw,
+  LogOut,
 } from "lucide-react";
 import Toast from "@/components/Toast";
 import BrandLogo from "@/components/BrandLogo";
@@ -49,6 +49,7 @@ interface AdminData {
 interface AdminViewProps {
   initialData: AdminData;
   onDataUpdated?: (newData: AdminData) => void;
+  onLogout?: () => void;
 }
 
 type TableKey =
@@ -74,7 +75,11 @@ const TABLES_CONFIG: { key: TableKey; label: string; icon: any }[] = [
   { key: "simulations", label: "Simulations Enregistrées", icon: History },
 ];
 
-export default function AdminView({ initialData, onDataUpdated }: AdminViewProps) {
+export default function AdminView({
+  initialData,
+  onDataUpdated,
+  onLogout,
+}: AdminViewProps) {
   const [activeTable, setActiveTable] = useState<TableKey>("typesClient");
   const [search, setSearch] = useState("");
   const [connected, setConnected] = useState<boolean>(false);
@@ -126,52 +131,6 @@ export default function AdminView({ initialData, onDataUpdated }: AdminViewProps
       list[index] = { ...list[index], [field]: value };
       return { ...prev, [activeTable]: list };
     });
-    setHasChanges(true);
-  };
-
-  // Add new row to current table
-  const handleAddRow = () => {
-    if (activeTable === "simulations") return;
-    let newRow: any = {};
-    switch (activeTable) {
-      case "typesClient":
-        newRow = { NOM_TYPE_CLIENT: "Nouveau Type", TAUX_DE_PROFIT: 0.065 };
-        break;
-      case "agences":
-        newRow = { CODE: "CODE_01", AGENCE: "Nouvelle Agence" };
-        break;
-      case "couverture":
-        newRow = { CODE_AGENCE: "01", NOM_AGENCE: "Agence", WILAYA: "Wilaya" };
-        break;
-      case "categories":
-        newRow = { CATEGORIE: "Nouvelle Catégorie" };
-        break;
-      case "marques":
-        newRow = { MARQUE: "Nouvelle Marque", LOGO: "" };
-        break;
-      case "produits":
-        newRow = { ID_PRODUIT: "PROD_01", CATEGORIE: "", MARQUE: "", PRODUIT_GENERIQUE: "" };
-        break;
-      case "pdvs":
-        newRow = {
-          ID_PDV: "PDV_01",
-          CATEGORIE: "",
-          MARQUE: "",
-          Commercial: "",
-          Adresse: "",
-          Wilaya: "",
-          Telephone: "",
-        };
-        break;
-      case "checkList":
-        newRow = { fr: "Nouveau document requis", ar: "وثيقة جديدة مطلوبة" };
-        break;
-    }
-
-    setTablesData((prev) => ({
-      ...prev,
-      [activeTable]: [newRow, ...(prev[activeTable] as any[])],
-    }));
     setHasChanges(true);
   };
 
@@ -287,6 +246,17 @@ export default function AdminView({ initialData, onDataUpdated }: AdminViewProps
             >
               <RefreshCw className={`w-4 h-4 ${isLoading ? "animate-spin" : ""}`} />
             </button>
+
+            {onLogout && (
+              <button
+                type="button"
+                onClick={onLogout}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border border-red-200 text-red-600 bg-red-50 hover:bg-red-100 transition-all cursor-pointer"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+                <span>Déconnexion</span>
+              </button>
+            )}
           </div>
         </div>
 
@@ -352,14 +322,6 @@ export default function AdminView({ initialData, onDataUpdated }: AdminViewProps
           <div className="flex items-center gap-2">
             {activeTable !== "simulations" && (
               <>
-                <button
-                  onClick={handleAddRow}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-purple-50 text-[#6A1B9A] hover:bg-purple-100 transition-all border border-purple-200"
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                  <span>Ajouter une ligne</span>
-                </button>
-
                 <button
                   onClick={() => {
                     loadAdminData();

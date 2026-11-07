@@ -17,6 +17,9 @@ export const metadata: Metadata = {
   description:
     "Simulateur de financement islamique Mourabaha Consommation — Smile البديل by Banque Al Baraka Algérie",
   keywords: ["mourabaha", "financement", "islamique", "algérie", "simulation", "baraka"],
+  icons: {
+    icon: "/logo.png",
+  },
 };
 
 export default function RootLayout({
