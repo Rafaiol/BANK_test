@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import SimulationWizard from "@/components/SimulationWizard";
 import CheckListView from "@/components/CheckListView";
+import PartenairesView from "@/components/PartenairesView";
 import AdminView from "@/components/AdminView";
 import AdminLoginModal from "@/components/AdminLoginModal";
 import {
@@ -17,7 +18,7 @@ import {
   CHECK_LIST_ITEMS,
 } from "@/data/fallbackData";
 
-type View = "simulation" | "checklist" | "admin";
+type View = "simulation" | "partenaires" | "checklist" | "admin";
 
 // Fallback data bundle used before API responds
 const FALLBACK = {
@@ -111,6 +112,18 @@ export default function HomePage() {
               produits: data.produits,
               pdvs: data.pdvs,
             }}
+            onNavigateToPartnersTab={() => setView("partenaires")}
+          />
+        )}
+        {view === "partenaires" && (
+          <PartenairesView
+            agences={data.agences}
+            categories={data.categories}
+            marques={data.marques}
+            produits={data.produits}
+            pdvs={data.pdvs}
+            couverture={data.couverture}
+            onNavigateToSimulation={() => setView("simulation")}
           />
         )}
         {view === "checklist" && <CheckListView items={data.checkList} />}
@@ -130,8 +143,8 @@ export default function HomePage() {
         onSuccess={handleAdminLoginSuccess}
       />
 
-      <footer className="text-center py-3 text-xs text-gray-400 border-t border-gray-200 bg-white">
-        Smile البديل &copy; 2026 — Mourabaha Consommation Simulator
+      <footer className="text-center py-3 text-xs text-gray-500 border-t border-gray-200 bg-white">
+        BDL Al Badil &copy; 2026 — Banque de Développement Local • DRE BOUIRA - 841 -
       </footer>
     </div>
   );

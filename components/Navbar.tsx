@@ -1,12 +1,12 @@
 "use client";
 
 import React from "react";
-import { FileCheck, Calculator, Lock, Shield, LogOut } from "lucide-react";
+import { FileCheck, Calculator, Store, Shield, LogOut, Lock } from "lucide-react";
 import SmileLogo from "@/components/SmileLogo";
 
 interface NavbarProps {
-  activeView: "simulation" | "checklist" | "admin";
-  onViewChange: (view: "simulation" | "checklist" | "admin") => void;
+  activeView: "simulation" | "partenaires" | "checklist" | "admin";
+  onViewChange: (view: "simulation" | "partenaires" | "checklist" | "admin") => void;
   isAdminAuthenticated?: boolean;
   onRequestAdminLogin?: () => void;
   onAdminLogout?: () => void;
@@ -30,20 +30,20 @@ export default function Navbar({
           <SmileLogo size="md" />
           <div className="min-w-0">
             <span className="font-bold text-base sm:text-lg leading-none block truncate">
-              Smile البديل
+              BDL البديل
             </span>
             <p className="text-purple-200 text-[10px] leading-none mt-0.5 hidden xs:block sm:block">
-              Mourabaha Consommation
+              DRE BOUIRA - 841 -
             </p>
           </div>
         </div>
 
-        {/* Center: Main Client Navigation Pages (Only Simulation & Check-List) */}
+        {/* Center: Main Client Navigation Pages (Simulation, Nos Partenaires, Check-List) */}
         <div className="flex items-center gap-1 bg-white/10 backdrop-blur-sm rounded-xl p-1 shrink-0">
           <button
             type="button"
             onClick={() => onViewChange("simulation")}
-            className={`flex items-center gap-1.5 px-3 sm:px-4 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
+            className={`flex items-center gap-1.5 px-2.5 sm:px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
               activeView === "simulation"
                 ? "bg-white text-[#6A1B9A] shadow-xs"
                 : "text-white/85 hover:text-white hover:bg-white/10"
@@ -54,8 +54,20 @@ export default function Navbar({
           </button>
           <button
             type="button"
+            onClick={() => onViewChange("partenaires")}
+            className={`flex items-center gap-1.5 px-2.5 sm:px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
+              activeView === "partenaires"
+                ? "bg-white text-[#6A1B9A] shadow-xs"
+                : "text-white/85 hover:text-white hover:bg-white/10"
+            }`}
+          >
+            <Store className="w-3.5 h-3.5 sm:hidden" />
+            <span>Nos Partenaires</span>
+          </button>
+          <button
+            type="button"
             onClick={() => onViewChange("checklist")}
-            className={`flex items-center gap-1.5 px-3 sm:px-4 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
+            className={`flex items-center gap-1.5 px-2.5 sm:px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
               activeView === "checklist"
                 ? "bg-white text-[#6A1B9A] shadow-xs"
                 : "text-white/85 hover:text-white hover:bg-white/10"

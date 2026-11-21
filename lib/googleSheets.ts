@@ -523,7 +523,7 @@ export async function appendSimulation(row: SimulationRow): Promise<boolean> {
     "",                         // 0: Col A - PAGE 01
     row.id,                     // 1: Col B - ID_SIMULATION
     row.date,                   // 2: Col C - DATE
-    "DRE BOUIRA",               // 3: Col D - Direction Régionale d'Exploitation
+    "DRE BOUIRA - 841 -",       // 3: Col D - Direction Régionale d'Exploitation
     row.agence,                 // 4: Col E - AGENCE
     "",                         // 5: Col F - PAGE_2
     row.categorie,              // 6: Col G - CATEGORIE

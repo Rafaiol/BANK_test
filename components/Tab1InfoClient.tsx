@@ -37,7 +37,7 @@ export default function Tab1InfoClient({
   typesClient,
   errors,
 }: Tab1InfoClientProps) {
-  const dureeOptions = [3, 6, 9, 12, 15, 18, 21, 24, 27, 30];
+  const dureeOptions = [3, 6, 12, 18, 24, 30, 36];
 
   const handleRevenuBlur = () => {
     // If the client wrote a number lower than 36 000, do not accept it
@@ -57,13 +57,13 @@ export default function Tab1InfoClient({
       {/* Direction Régionale — read-only */}
       <div className="space-y-1">
         <label className="block text-xs sm:text-sm font-medium text-gray-700">
-          Direction Régionale d&apos;Exploitation
+          Banque &amp; Direction Régionale d&apos;Exploitation
         </label>
         <input
           type="text"
-          value="DRE BOUIRA"
+          value="Banque de Développement Local (BDL) — DRE BOUIRA - 841 -"
           readOnly
-          className="w-full px-3.5 py-2 sm:py-2.5 border border-gray-200 rounded-xl bg-gray-50 text-gray-500 text-xs sm:text-sm cursor-not-allowed select-none"
+          className="w-full px-3.5 py-2 sm:py-2.5 border border-purple-200 rounded-xl bg-purple-50/50 text-[#6A1B9A] font-semibold text-xs sm:text-sm cursor-not-allowed select-none"
         />
       </div>
 
@@ -128,7 +128,7 @@ export default function Tab1InfoClient({
           Durée (mois) <span className="text-red-500">*</span>
           <span className="ml-1 text-[11px] text-gray-400">(Obligatoire)</span>
         </label>
-        <div className="grid grid-cols-5 gap-1.5 sm:gap-2">
+        <div className="grid grid-cols-4 sm:grid-cols-7 gap-1.5 sm:gap-2">
           {dureeOptions.map((d) => (
             <button
               key={d}

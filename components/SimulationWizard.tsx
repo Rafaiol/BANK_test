@@ -40,6 +40,7 @@ interface LookupData {
 
 interface SimulationWizardProps {
   data: LookupData;
+  onNavigateToPartnersTab?: () => void;
 }
 
 type Tab = 0 | 1 | 2;
@@ -62,7 +63,10 @@ const slideVariants = {
   }),
 };
 
-export default function SimulationWizard({ data }: SimulationWizardProps) {
+export default function SimulationWizard({
+  data,
+  onNavigateToPartnersTab,
+}: SimulationWizardProps) {
   const [tab, setTab] = useState<Tab>(0);
   const [direction, setDirection] = useState(1);
 
@@ -417,7 +421,9 @@ export default function SimulationWizard({ data }: SimulationWizardProps) {
                 telephone={telephone}
                 onTelephoneChange={setTelephone}
                 telephoneError={errors.telephone}
-                onNavigateToPartners={() => goTo(2)}
+                onNavigateToPartners={() =>
+                  onNavigateToPartnersTab ? onNavigateToPartnersTab() : goTo(2)
+                }
                 selectedAgence={selectedAgence}
                 selectedCategorie={selectedCategorie}
                 selectedMarque={selectedMarque}

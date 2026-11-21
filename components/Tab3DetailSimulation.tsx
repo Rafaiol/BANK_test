@@ -256,7 +256,7 @@ export default function Tab3DetailSimulation({
             <div className="p-3.5 sm:p-4 flex items-center justify-between gap-3 text-xs sm:text-sm">
               <div className="flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-[#6A1B9A] shrink-0" />
-                <span className="text-gray-600 font-medium">Montant pris en charge par la banque</span>
+                <span className="text-gray-600 font-medium">Montant de financement</span>
               </div>
               <span className="font-bold text-[#6A1B9A] tabular-nums text-sm sm:text-base">
                 {formatDZD(results.montantAFinancer)}
@@ -274,9 +274,12 @@ export default function Tab3DetailSimulation({
             </div>
 
             <div className="p-3.5 sm:p-4 flex items-center justify-between gap-3 text-xs sm:text-sm bg-purple-50/70">
-              <span className="font-bold text-gray-900">Total à rembourser sur {dureeMois} mois</span>
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-purple-600 shrink-0" />
+                <span className="font-bold text-gray-900">Capacité maximum de financement</span>
+              </div>
               <span className="font-black text-[#6A1B9A] tabular-nums text-base sm:text-lg">
-                {formatDZD(totalARembourser)}
+                {formatDZD(results.capaciteEndettement)}
               </span>
             </div>
           </div>
@@ -399,7 +402,7 @@ export default function Tab3DetailSimulation({
           مرحبا بكم
         </p>
         <p className="text-xs text-gray-400 mt-0.5">
-          Bienvenue — Smile البديل
+          Bienvenue — BDL Al Badil • DRE BOUIRA - 841 -
         </p>
       </div>
     </div>

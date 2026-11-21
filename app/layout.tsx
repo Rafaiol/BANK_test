@@ -13,10 +13,10 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "Smile البديل — Mourabaha Consommation",
+  title: "BDL Al Badil — Banque de Développement Local | DRE BOUIRA - 841 -",
   description:
-    "Simulateur de financement islamique Mourabaha Consommation — Smile البديل by Banque Al Baraka Algérie",
-  keywords: ["mourabaha", "financement", "islamique", "algérie", "simulation", "baraka"],
+    "Simulateur de financement islamique Mourabaha Consommation — Al Badil par la Banque de Développement Local (BDL) — Direction Régionale d'Exploitation DRE BOUIRA - 841 -",
+  keywords: ["mourabaha", "financement", "islamique", "algérie", "simulation", "bdl", "badil", "bouira"],
   icons: {
     icon: "/logo.png",
   },

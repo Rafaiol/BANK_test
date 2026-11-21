@@ -89,7 +89,7 @@ export default function SimulationPdfModal({
     ? `${agenceObj.CODE} - ${agenceObj.AGENCE}`
     : selectedAgence
     ? selectedAgence
-    : "Non spécifiée (Toutes agences Al Baraka)";
+    : "Non spécifiée (Toutes agences BDL)";
 
   const totalCost = results.montantAFinancer + results.margeBeneficiaire;
   const debtRatio = revenu > 0 ? ((results.mensualite / revenu) * 100).toFixed(1) : "0";
@@ -220,16 +220,16 @@ export default function SimulationPdfModal({
                         </div>
                       </div>
                       <p className="text-[11px] font-bold text-gray-700 tracking-normal mt-0.5">
-                        Banque Al Baraka d&apos;Algérie —{" "}
+                        Banque de Développement Local (BDL) —{" "}
                         <span
                           dir="rtl"
                           style={{ fontFamily: "Tahoma, Arial, sans-serif" }}
                         >
-                          بنك البركة الجزائري
+                          بنك التنمية المحلية
                         </span>
                       </p>
                       <p className="text-[10px] text-gray-500 font-medium">
-                        Direction Régionale d&apos;Exploitation: DRE BOUIRA
+                        Direction Régionale d&apos;Exploitation: DRE BOUIRA - 841 -
                       </p>
                     </div>
 
@@ -391,7 +391,7 @@ export default function SimulationPdfModal({
                         </tr>
                         <tr className="border-b border-gray-100 bg-gray-50/50">
                           <td className="py-2 px-3.5 font-medium text-gray-700">
-                            Montant financé par la banque (Financement net)
+                            Montant de financement
                           </td>
                           <td className="py-2 px-3.5 text-right font-bold text-[#6A1B9A] tabular-nums">
                             {formatDZD(results.montantAFinancer)}
@@ -489,7 +489,7 @@ export default function SimulationPdfModal({
                   Document indicatif généré par le simulateur officiel Smile البديل — Ne vaut pas accord définitif de financement.
                 </p>
                 <p className="mt-0.5 text-gray-400">
-                  Banque Al Baraka d&apos;Algérie — Société par Actions au capital de 20.000.000.000 DZD — Siège Social : Alger — www.albaraka-bank.dz
+                  Banque de Développement Local (BDL) — Direction Régionale d&apos;Exploitation DRE BOUIRA - 841 - — www.bdl.dz
                 </p>
               </div>
             </div>
