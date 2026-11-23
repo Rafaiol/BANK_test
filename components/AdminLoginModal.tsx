@@ -39,6 +39,7 @@ export default function AdminLoginModal({
         cleanUser === "admin" &&
         (cleanPass === "admin" ||
           cleanPass === "admin2026" ||
+          cleanPass === "elbadil" ||
           cleanPass === "albadil" ||
           cleanPass === "smile2026")
       ) {

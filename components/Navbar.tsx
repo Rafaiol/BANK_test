@@ -30,7 +30,7 @@ export default function Navbar({
           <SmileLogo size="md" />
           <div className="min-w-0">
             <span className="font-bold text-base sm:text-lg leading-none block truncate">
-              BDL البديل
+              Smile البديل
             </span>
             <p className="text-purple-200 text-[10px] leading-none mt-0.5 hidden xs:block sm:block">
               DRE BOUIRA - 841 -
@@ -43,11 +43,10 @@ export default function Navbar({
           <button
             type="button"
             onClick={() => onViewChange("simulation")}
-            className={`flex items-center gap-1.5 px-2.5 sm:px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
-              activeView === "simulation"
-                ? "bg-white text-[#6A1B9A] shadow-xs"
-                : "text-white/85 hover:text-white hover:bg-white/10"
-            }`}
+            className={`flex items-center gap-1.5 px-2.5 sm:px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all cursor-pointer ${activeView === "simulation"
+              ? "bg-white text-[#6A1B9A] shadow-xs"
+              : "text-white/85 hover:text-white hover:bg-white/10"
+              }`}
           >
             <Calculator className="w-3.5 h-3.5 sm:hidden" />
             <span>Simulation</span>
@@ -55,11 +54,10 @@ export default function Navbar({
           <button
             type="button"
             onClick={() => onViewChange("partenaires")}
-            className={`flex items-center gap-1.5 px-2.5 sm:px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
-              activeView === "partenaires"
-                ? "bg-white text-[#6A1B9A] shadow-xs"
-                : "text-white/85 hover:text-white hover:bg-white/10"
-            }`}
+            className={`flex items-center gap-1.5 px-2.5 sm:px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all cursor-pointer ${activeView === "partenaires"
+              ? "bg-white text-[#6A1B9A] shadow-xs"
+              : "text-white/85 hover:text-white hover:bg-white/10"
+              }`}
           >
             <Store className="w-3.5 h-3.5 sm:hidden" />
             <span>Nos Partenaires</span>
@@ -67,11 +65,10 @@ export default function Navbar({
           <button
             type="button"
             onClick={() => onViewChange("checklist")}
-            className={`flex items-center gap-1.5 px-2.5 sm:px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
-              activeView === "checklist"
-                ? "bg-white text-[#6A1B9A] shadow-xs"
-                : "text-white/85 hover:text-white hover:bg-white/10"
-            }`}
+            className={`flex items-center gap-1.5 px-2.5 sm:px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all cursor-pointer ${activeView === "checklist"
+              ? "bg-white text-[#6A1B9A] shadow-xs"
+              : "text-white/85 hover:text-white hover:bg-white/10"
+              }`}
           >
             <FileCheck className="w-3.5 h-3.5 sm:hidden" />
             <span>Check-List</span>
@@ -85,11 +82,10 @@ export default function Navbar({
               <button
                 type="button"
                 onClick={() => onViewChange("admin")}
-                className={`flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-                  activeView === "admin"
-                    ? "bg-white text-[#6A1B9A] shadow-2xs"
-                    : "text-white hover:bg-white/20"
-                }`}
+                className={`flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${activeView === "admin"
+                  ? "bg-white text-[#6A1B9A] shadow-2xs"
+                  : "text-white hover:bg-white/20"
+                  }`}
                 title="Accéder au panneau d'administration"
               >
                 <Shield className="w-3.5 h-3.5" />

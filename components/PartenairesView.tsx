@@ -2,8 +2,7 @@
 
 import React, { useState, useMemo } from "react";
 import BrandLogo from "@/components/BrandLogo";
-import PDVTable from "@/components/PDVTable";
-import { Store, Calculator, Sparkles, Building2, Layers, CheckCircle2, MapPin } from "lucide-react";
+import { Store, Calculator, Sparkles, Building2, Layers, MapPin } from "lucide-react";
 import type {
   Agence,
   Categorie,
@@ -47,7 +46,6 @@ export default function PartenairesView({
 }: PartenairesViewProps) {
   const [selectedAgence, setSelectedAgence] = useState<string>("");
   const [selectedCategorie, setSelectedCategorie] = useState<string>("");
-  const [selectedMarque, setSelectedMarque] = useState<string>("");
 
   const isMeuble = (selectedCategorie || "").toLowerCase().trim() === "meuble";
 
@@ -62,25 +60,6 @@ export default function PartenairesView({
     return marques.filter((m) => catBrands.has(m.MARQUE.toUpperCase()));
   }, [selectedAgence, selectedCategorie, isMeuble, produits, marques]);
 
-  // Filter Points de Vente using agency coverage
-  const filteredPDVs = useMemo((): PointDeVente[] => {
-    if (!selectedAgence || !selectedCategorie) return [];
-
-    const coveredWilayas = couverture
-      .filter((c) => c.CODE_AGENCE === selectedAgence)
-      .map((c) => c.WILAYA.toLowerCase());
-
-    return pdvs.filter(
-      (pdv) =>
-        coveredWilayas.includes(pdv.Wilaya.toLowerCase()) &&
-        pdv.CATEGORIE.toLowerCase() === selectedCategorie.toLowerCase() &&
-        (isMeuble ||
-          !selectedMarque ||
-          pdv.MARQUE.toLowerCase() === selectedMarque.toLowerCase() ||
-          pdv.MARQUE === "")
-    );
-  }, [selectedAgence, selectedCategorie, selectedMarque, isMeuble, pdvs, couverture]);
-
   return (
     <div className="max-w-5xl mx-auto px-3 sm:px-4 py-6 sm:py-8 space-y-6 sm:space-y-8 animate-in fade-in duration-300">
       {/* ─── HERO HEADER ────────────────────────────────────────── */}
@@ -92,9 +71,6 @@ export default function PartenairesView({
         <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">
           Nos Partenaires Conventionnés
         </h1>
-        <p className="text-xs sm:text-sm text-gray-600 max-w-2xl mx-auto leading-relaxed">
-          Banque de Développement Local (BDL) — Direction Régionale d&apos;Exploitation DRE BOUIRA - 841 -
-        </p>
         <p className="text-xs text-[#6A1B9A] font-medium" dir="rtl">
           شركاؤنا المعتمدون في إطار الصيرفة الإسلامية البديل
         </p>
@@ -132,16 +108,16 @@ export default function PartenairesView({
         </div>
       </div>
 
-      {/* ─── SECTION 2: EXPLORATEUR DE POINTS DE VENTE PAR AGENCE ─── */}
+      {/* ─── SECTION 2: EXPLORATEUR DE MARQUES PAR AGENCE + CATÉGORIE ─── */}
       <div className="bg-white rounded-3xl border border-purple-100 p-5 sm:p-7 shadow-sm space-y-5">
         <div className="flex items-center justify-between gap-2 flex-wrap border-b border-gray-100 pb-3">
           <div>
             <h2 className="text-base sm:text-lg font-bold text-gray-900 flex items-center gap-2">
               <MapPin className="w-4 h-4 text-[#6A1B9A]" />
-              Trouver un Magasin ou Point de Vente Agréé
+              Trouver les Marques Disponibles
             </h2>
             <p className="text-xs text-gray-500 mt-0.5">
-              Sélectionnez votre agence et la catégorie souhaitée pour afficher les magasins conventionnés.
+              Sélectionnez votre agence et la catégorie souhaitée pour afficher les marques conventionnées.
             </p>
           </div>
           {onNavigateToSimulation && (
@@ -156,8 +132,8 @@ export default function PartenairesView({
           )}
         </div>
 
-        {/* Filters */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+        {/* Filters: Agence + Categorie only */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
           {/* Agence */}
           <div className="space-y-1">
             <label className="block text-xs font-semibold text-gray-700 flex items-center gap-1">
@@ -168,7 +144,7 @@ export default function PartenairesView({
               value={selectedAgence}
               onChange={(e) => {
                 setSelectedAgence(e.target.value);
-                setSelectedMarque("");
+                setSelectedCategorie("");
               }}
               className="w-full px-3 py-2 border rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-purple-400 bg-white border-gray-200"
             >
@@ -189,11 +165,13 @@ export default function PartenairesView({
             </label>
             <select
               value={selectedCategorie}
-              onChange={(e) => {
-                setSelectedCategorie(e.target.value);
-                setSelectedMarque("");
-              }}
-              className="w-full px-3 py-2 border rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-purple-400 bg-white border-gray-200"
+              onChange={(e) => setSelectedCategorie(e.target.value)}
+              disabled={!selectedAgence}
+              className={`w-full px-3 py-2 border rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-purple-400 bg-white ${
+                !selectedAgence
+                  ? "border-gray-200 bg-gray-50 text-gray-400 cursor-not-allowed"
+                  : "border-gray-200"
+              }`}
             >
               <option value="">— Sélectionner une catégorie —</option>
               {categories.map((c) => (
@@ -203,62 +181,41 @@ export default function PartenairesView({
               ))}
             </select>
           </div>
-
-          {/* Marque (if not Meuble and if agence+categorie chosen) */}
-          <div className="space-y-1">
-            <label className="block text-xs font-semibold text-gray-700 flex items-center gap-1">
-              <Store className="w-3.5 h-3.5 text-[#6A1B9A]" />
-              3. Marque (facultatif)
-            </label>
-            <select
-              value={selectedMarque}
-              onChange={(e) => setSelectedMarque(e.target.value)}
-              disabled={!selectedAgence || !selectedCategorie || isMeuble}
-              className={`w-full px-3 py-2 border rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-purple-400 bg-white ${
-                !selectedAgence || !selectedCategorie || isMeuble
-                  ? "border-gray-200 bg-gray-50 text-gray-400 cursor-not-allowed"
-                  : "border-gray-200"
-              }`}
-            >
-              <option value="">
-                {isMeuble
-                  ? "— Non applicable pour Meuble —"
-                  : !selectedAgence || !selectedCategorie
-                  ? "— Choisissez d'abord agence & catégorie —"
-                  : "— Toutes les marques —"}
-              </option>
-              {filteredMarques.map((m) => (
-                <option key={m.MARQUE} value={m.MARQUE}>
-                  {m.MARQUE}
-                </option>
-              ))}
-            </select>
-          </div>
         </div>
 
-        {/* Results of PDV Table */}
+        {/* Brand cards result — only shown after agence + categorie chosen */}
         {selectedAgence && selectedCategorie ? (
-          filteredPDVs.length > 0 ? (
-            <div className="space-y-2 pt-2">
-              <div className="flex items-center justify-between text-xs text-gray-600">
-                <span className="font-medium">
-                  {filteredPDVs.length} point{filteredPDVs.length > 1 ? "s" : ""} de vente trouvé{filteredPDVs.length > 1 ? "s" : ""}
-                </span>
-                <span className="text-emerald-700 font-semibold inline-flex items-center gap-1">
-                  <CheckCircle2 className="w-3.5 h-3.5" />
-                  Conventionnés BDL
-                </span>
+          isMeuble ? (
+            <div className="p-6 text-center text-xs text-gray-500 bg-purple-50/50 rounded-2xl border border-purple-100">
+              La catégorie <strong>Meuble</strong> est disponible dans tous les points de vente partenaires. Présentez-vous directement en agence pour plus d&apos;informations.
+            </div>
+          ) : filteredMarques.length > 0 ? (
+            <div className="space-y-2 pt-1">
+              <p className="text-xs text-gray-500 font-medium">
+                {filteredMarques.length} marque{filteredMarques.length > 1 ? "s" : ""} disponible{filteredMarques.length > 1 ? "s" : ""} pour cette catégorie
+              </p>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                {filteredMarques.map((m) => (
+                  <div
+                    key={m.MARQUE}
+                    className="bg-white rounded-2xl border border-gray-200 p-4 flex flex-col items-center justify-center text-center shadow-xs hover:border-[#6A1B9A] hover:shadow-md transition-all"
+                  >
+                    <div className="h-14 flex items-center justify-center w-full px-2">
+                      <BrandLogo brand={m.MARQUE} size="lg" />
+                    </div>
+                    <span className="text-xs font-bold text-gray-800 mt-2">{m.MARQUE}</span>
+                  </div>
+                ))}
               </div>
-              <PDVTable pdvs={filteredPDVs} />
             </div>
           ) : (
             <div className="p-6 text-center text-xs text-gray-500 bg-gray-50 rounded-2xl border border-gray-200">
-              Aucun point de vente conventionné trouvé pour ces critères spécifiques dans cette agence.
+              Aucune marque conventionnée trouvée pour cette catégorie dans cette agence.
             </div>
           )
         ) : (
           <div className="p-6 text-center text-xs text-gray-500 bg-purple-50/50 rounded-2xl border border-purple-100">
-            Choisissez une agence et une catégorie ci-dessus pour afficher la liste complète des points de vente et magasins agréés.
+            Choisissez une agence et une catégorie ci-dessus pour afficher les marques agréées.
           </div>
         )}
       </div>

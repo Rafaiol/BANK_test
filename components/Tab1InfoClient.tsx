@@ -54,19 +54,6 @@ export default function Tab1InfoClient({
 
   return (
     <div className="space-y-4 sm:space-y-5 w-full">
-      {/* Direction Régionale — read-only */}
-      <div className="space-y-1">
-        <label className="block text-xs sm:text-sm font-medium text-gray-700">
-          Banque &amp; Direction Régionale d&apos;Exploitation
-        </label>
-        <input
-          type="text"
-          value="Banque de Développement Local (BDL) — DRE BOUIRA - 841 -"
-          readOnly
-          className="w-full px-3.5 py-2 sm:py-2.5 border border-purple-200 rounded-xl bg-purple-50/50 text-[#6A1B9A] font-semibold text-xs sm:text-sm cursor-not-allowed select-none"
-        />
-      </div>
-
       {/* TYPE CLIENT */}
       <div className="space-y-1">
         <label className="block text-xs sm:text-sm font-medium text-gray-700">
@@ -115,9 +102,9 @@ export default function Tab1InfoClient({
         value={price}
         onChange={onPriceChange}
         step={10000}
-        min={0}
+        min={36000}
         suffix="د.ج."
-        placeholder="Prix total du produit"
+        placeholder="36 000 DA minimum"
         error={errors.price}
         required
       />

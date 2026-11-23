@@ -1,12 +1,10 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import {
   Phone,
   Lock,
-  Store,
   Download,
-  ArrowRight,
   CheckCircle2,
   AlertCircle,
   Sparkles,
@@ -44,6 +42,8 @@ interface Tab3DetailSimulationProps {
   onExportPdf?: () => void;
   isExportReady?: boolean;
   missingFields?: string[];
+  // Registration callback (called when user clicks Enregistrer)
+  onRegister?: () => void;
 }
 
 export default function Tab3DetailSimulation({
@@ -60,9 +60,24 @@ export default function Tab3DetailSimulation({
   onExportPdf,
   isExportReady = false,
   missingFields = [],
+  onRegister,
 }: Tab3DetailSimulationProps) {
   // Validate Algerian mobile phone: 10 digits starting with 05, 06, or 07
   const isPhoneValid = /^(05|06|07)\d{8}$/.test(telephone.trim());
+
+  // Registration gate: user must press "Enregistrer" after entering a valid phone
+  const [isRegistered, setIsRegistered] = useState(false);
+
+  // Reset registration when phone changes
+  const handlePhoneChange = (v: string) => {
+    if (isRegistered) setIsRegistered(false);
+    onTelephoneChange(v);
+  };
+
+  const handleRegister = () => {
+    setIsRegistered(true);
+    onRegister?.();
+  };
 
   // Check if monthly installment is within debt capacity (max 30% of net income)
   const isWithinCapacity =
@@ -141,7 +156,7 @@ export default function Tab3DetailSimulation({
                 type="tel"
                 value={telephone}
                 onChange={(e) =>
-                  onTelephoneChange(e.target.value.replace(/[^0-9]/g, ""))
+                  handlePhoneChange(e.target.value.replace(/[^0-9]/g, ""))
                 }
                 maxLength={10}
                 placeholder="05 / 06 / 07 XX XX XX XX"
@@ -181,12 +196,24 @@ export default function Tab3DetailSimulation({
                 Le numéro doit débuter par 05, 06 ou 07 et comporter exactement 10 chiffres.
               </p>
             )}
+
+            {/* Enregistrer button — shown only when phone is valid but not yet registered */}
+            {isPhoneValid && !isRegistered && (
+              <button
+                type="button"
+                onClick={handleRegister}
+                className="mt-3 w-full flex items-center justify-center gap-2 py-2.5 rounded-xl font-semibold text-sm bg-gradient-to-r from-[#8A1C86] to-[#6A1B9A] text-white shadow-md hover:from-[#761673] hover:to-[#571480] active:scale-[0.98] transition-all cursor-pointer"
+              >
+                <CheckCircle2 className="w-4 h-4" />
+                Enregistrer et afficher les résultats
+              </button>
+            )}
           </div>
         </div>
       </div>
 
-      {/* ─── CONDITIONAL RESULTS: UNLOCKED ONLY WHEN PHONE IS VALID ─── */}
-      {!isPhoneValid ? (
+      {/* ─── CONDITIONAL RESULTS: UNLOCKED ONLY WHEN PHONE IS VALID & REGISTERED ─── */}
+      {!(isPhoneValid && isRegistered) ? (
         /* LOCKED TEASER STATE */
         <div className="p-6 sm:p-8 rounded-2xl border-2 border-dashed border-purple-200/90 bg-gradient-to-b from-purple-50/50 via-slate-50/40 to-white text-center space-y-3 shadow-2xs">
           <div className="w-14 h-14 mx-auto rounded-2xl bg-purple-100/80 border border-purple-200 flex items-center justify-center text-[#6A1B9A] shadow-inner">
@@ -197,7 +224,9 @@ export default function Tab3DetailSimulation({
               Résultats de la simulation masqués
             </h3>
             <p className="text-xs text-gray-500 max-w-md mx-auto mt-1 leading-relaxed">
-              Veuillez saisir votre numéro de téléphone valide ci-dessus afin de calculer et débloquer instantanément le montant exact de votre mensualité, l'apport personnel requis et l'attestation téléchargeable.
+              {isPhoneValid
+                ? "Cliquez sur « Enregistrer et afficher les résultats » pour débloquer votre simulation."
+                : "Veuillez saisir votre numéro de téléphone valide ci-dessus afin de calculer et débloquer instantanément le montant exact de votre mensualité, l'apport personnel requis et l'attestation téléchargeable."}
             </p>
           </div>
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-100/60 text-[#6A1B9A] text-xs font-semibold">
@@ -282,38 +311,6 @@ export default function Tab3DetailSimulation({
                 {formatDZD(results.capaciteEndettement)}
               </span>
             </div>
-          </div>
-
-          {/* 4. NOTE TO VIEW PARTNERS ON NEXT PAGE (REQUIREMENT 2) */}
-          <div className="p-4 sm:p-5 rounded-2xl border border-purple-200 bg-gradient-to-r from-purple-50 via-fuchsia-50/40 to-white shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div className="flex items-start gap-3 min-w-0">
-              <div className="p-2.5 rounded-xl bg-purple-100 text-[#6A1B9A] shrink-0 mt-0.5 sm:mt-0">
-                <Store className="w-5 h-5" />
-              </div>
-              <div className="min-w-0">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <h4 className="text-xs sm:text-sm font-bold text-gray-900 leading-tight">
-                    Nos Partenaires Conventionnés
-                  </h4>
-                  <span className="text-[10px] font-semibold bg-purple-100 text-[#6A1B9A] px-2 py-0.5 rounded-full">
-                    Étape facultative
-                  </span>
-                </div>
-                <p className="text-xs text-gray-600 mt-1 leading-relaxed">
-                  Vous pouvez consulter l&apos;ensemble de nos partenaires conventionnés, marques agréées et points de vente à la page suivante (<strong>Nos Partenaires</strong>).
-                </p>
-              </div>
-            </div>
-            {onNavigateToPartners && (
-              <button
-                type="button"
-                onClick={onNavigateToPartners}
-                className="px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold bg-white border border-purple-300 text-[#6A1B9A] hover:bg-purple-50 hover:border-purple-400 transition-all flex items-center justify-center gap-1.5 shadow-2xs shrink-0 cursor-pointer self-start sm:self-center whitespace-nowrap active:scale-[0.98]"
-              >
-                Voir nos partenaires
-                <ArrowRight className="w-4 h-4" />
-              </button>
-            )}
           </div>
 
           {/* 5. PDF EXPORT ACTION CARD */}
@@ -402,7 +399,7 @@ export default function Tab3DetailSimulation({
           مرحبا بكم
         </p>
         <p className="text-xs text-gray-400 mt-0.5">
-          Bienvenue — BDL Al Badil • DRE BOUIRA - 841 -
+          Bienvenue — BDL El Badil • DRE BOUIRA - 841 -
         </p>
       </div>
     </div>

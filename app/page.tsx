@@ -144,7 +144,7 @@ export default function HomePage() {
       />
 
       <footer className="text-center py-3 text-xs text-gray-500 border-t border-gray-200 bg-white">
-        BDL Al Badil &copy; 2026 — Banque de Développement Local • DRE BOUIRA - 841 -
+        Smile El Badil &copy; 2026 — Banque de Développement Local • DRE BOUIRA - 841 -
       </footer>
     </div>
   );

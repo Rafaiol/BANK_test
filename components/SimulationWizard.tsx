@@ -48,7 +48,6 @@ type Tab = 0 | 1 | 2;
 const TAB_LABELS = [
   { label: "Info Client", icon: User },
   { label: "Détail Simulation", icon: Calculator },
-  { label: "Nos Partenaires", icon: Store },
 ];
 
 const slideVariants = {
@@ -230,7 +229,6 @@ export default function SimulationWizard({
     }
 
     if (tab === 1) {
-      goTo(2);
       return;
     }
   }
@@ -422,7 +420,7 @@ export default function SimulationWizard({
                 onTelephoneChange={setTelephone}
                 telephoneError={errors.telephone}
                 onNavigateToPartners={() =>
-                  onNavigateToPartnersTab ? onNavigateToPartnersTab() : goTo(2)
+                  onNavigateToPartnersTab ? onNavigateToPartnersTab() : undefined
                 }
                 selectedAgence={selectedAgence}
                 selectedCategorie={selectedCategorie}
@@ -432,26 +430,6 @@ export default function SimulationWizard({
                 onExportPdf={() => setIsPdfModalOpen(true)}
                 isExportReady={isExportReady}
                 missingFields={missingFields}
-              />
-            )}
-
-            {/* TAB 2: Nos Partenaires (Formerly Produit, now 3rd page & optional) */}
-            {tab === 2 && (
-              <Tab2Produit
-                agences={data.agences}
-                categories={data.categories}
-                marques={data.marques}
-                produits={data.produits}
-                pdvs={data.pdvs}
-                couverture={data.couverture}
-                selectedAgence={selectedAgence}
-                onAgenceChange={setSelectedAgence}
-                selectedCategorie={selectedCategorie}
-                onCategorieChange={setSelectedCategorie}
-                selectedMarque={selectedMarque}
-                onMarqueChange={setSelectedMarque}
-                selectedProduits={selectedProduits}
-                onProduitsChange={setSelectedProduits}
               />
             )}
           </motion.div>
@@ -494,38 +472,6 @@ export default function SimulationWizard({
         )}
 
         {tab === 1 && (
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => goTo(2)}
-              className="flex items-center gap-1.5 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-semibold border-2 border-purple-200 text-[#6A1B9A] hover:bg-purple-50 hover:border-purple-300 transition-all cursor-pointer"
-            >
-              Nos Partenaires
-              <ChevronRight className="w-4 h-4" />
-            </button>
-            <button
-              onClick={handleSave}
-              disabled={isSaving}
-              className="flex items-center gap-1.5 px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-semibold bg-gradient-to-r from-[#8A1C86] to-[#6A1B9A] text-white shadow-md hover:shadow-lg hover:opacity-90 transition-all disabled:opacity-60 cursor-pointer"
-            >
-              {isSaving ? (
-                <>
-                  <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
-                  </svg>
-                  Enregistrement…
-                </>
-              ) : (
-                <>
-                  <Save className="w-4 h-4" />
-                  Enregistrer
-                </>
-              )}
-            </button>
-          </div>
-        )}
-
-        {tab === 2 && (
           <button
             onClick={handleSave}
             disabled={isSaving}

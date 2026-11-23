@@ -8,20 +8,14 @@ import {
   CheckCircle2,
   User,
   Banknote,
-  Store,
   Eye,
   Loader2,
-  Building,
-  Phone,
-  MapPin,
-  Calendar,
 } from "lucide-react";
 import { formatDZD } from "@/lib/calculations";
 import type { SimulationResults } from "@/lib/calculations";
 import type { PointDeVente, Agence, CheckListItem } from "@/data/fallbackData";
 import { toPng } from "html-to-image";
 import jsPDF from "jspdf";
-import SmileLogo from "@/components/SmileLogo";
 
 interface SimulationPdfModalProps {
   isOpen: boolean;
@@ -123,7 +117,7 @@ export default function SimulationPdfModal({
       const pdfHeight = (element.offsetHeight * pdfWidth) / element.offsetWidth;
 
       pdf.addImage(dataUrl, "PNG", 0, 0, pdfWidth, pdfHeight, undefined, "FAST");
-      pdf.save(`Simulation-Smile-Albadil-${telephone || "dossier"}.pdf`);
+      pdf.save(`Simulation-Smile-El-Badil-${telephone || "dossier"}.pdf`);
     } catch (error) {
       console.error("Erreur lors de la génération du PDF:", error);
     } finally {
@@ -205,7 +199,13 @@ export default function SimulationPdfModal({
                   <div className="flex items-start justify-between">
                     <div>
                       <div className="flex items-center gap-2.5">
-                        <SmileLogo size={36} withShadow={false} />
+                        <div className="w-10 h-10 rounded-lg bg-white border border-purple-100 flex items-center justify-center overflow-hidden shrink-0 p-0.5">
+                          <img
+                            src="/logo-badil.png"
+                            alt="BDL El Badil"
+                            className="w-full h-full object-contain"
+                          />
+                        </div>
                         <div className="flex items-center gap-2">
                           <span className="text-2xl font-black text-[#6A1B9A]">
                             Smile
@@ -304,64 +304,11 @@ export default function SimulationPdfModal({
                   </div>
                 </div>
 
-                {/* ─── SECTION 2: BIEN & POINT DE VENTE ─────────────────────── */}
-                <div>
-                  <h2 className="text-[11px] font-bold uppercase text-[#6A1B9A] border-b border-purple-100 pb-1 mb-2 flex items-center gap-1.5">
-                    <Store className="w-3.5 h-3.5 text-[#6A1B9A]" />
-                    2. Désignation du Bien &amp; Point de Vente Agréé
-                  </h2>
-                  <div className="grid grid-cols-3 gap-2.5 bg-gray-50/80 p-3 rounded-lg border border-gray-200 text-xs">
-                    <div>
-                      <span className="text-[10px] text-gray-500 block font-medium">
-                        Catégorie
-                      </span>
-                      <span className="font-semibold text-gray-900 text-xs">
-                        {selectedCategorie || "Non spécifiée"}
-                      </span>
-                    </div>
-                    <div>
-                      <span className="text-[10px] text-gray-500 block font-medium">
-                        Marque
-                      </span>
-                      <span className="font-semibold text-gray-900 text-xs">
-                        {(selectedCategorie || "").toLowerCase().trim() === "meuble"
-                          ? "— (Non requise)"
-                          : selectedMarque || "Non spécifiée"}
-                      </span>
-                    </div>
-                    <div>
-                      <span className="text-[10px] text-gray-500 block font-medium">
-                        Produit(s)
-                      </span>
-                      <span className="font-semibold text-gray-900 text-xs">
-                        {selectedProduits && selectedProduits.length > 0
-                          ? selectedProduits.join(", ")
-                          : "Non spécifié"}
-                      </span>
-                    </div>
-
-                    <div className="col-span-3 pt-2 mt-0.5 border-t border-gray-200 text-xs">
-                      <span className="text-[10px] text-gray-500 block font-medium mb-0.5">
-                        Magasin / Partenaire conventionné :
-                      </span>
-                      {primaryPdv ? (
-                        <p className="font-medium text-gray-900">
-                          <strong>{primaryPdv.Commercial}</strong> — {primaryPdv.Adresse} ({primaryPdv.Wilaya}) — Tél : {primaryPdv.Telephone}
-                        </p>
-                      ) : (
-                        <p className="font-normal text-gray-500 italic">
-                          Point de vente partenaire à convenir lors du dépôt du dossier en agence
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                {/* ─── SECTION 3: PLAN FINANCIER MOURABAHA ──────────────────── */}
+                {/* ─── SECTION 2: PLAN FINANCIER MOURABAHA ──────────────────── */}
                 <div>
                   <h2 className="text-[11px] font-bold uppercase text-[#6A1B9A] border-b border-purple-100 pb-1 mb-2 flex items-center gap-1.5">
                     <Banknote className="w-3.5 h-3.5 text-[#6A1B9A]" />
-                    3. Plan Financier Mourabaha
+                    2. Plan Financier Mourabaha
                   </h2>
                   <div className="border border-gray-200 rounded-lg overflow-hidden">
                     <table className="w-full text-left text-xs">
@@ -489,7 +436,7 @@ export default function SimulationPdfModal({
                   Document indicatif généré par le simulateur officiel Smile البديل — Ne vaut pas accord définitif de financement.
                 </p>
                 <p className="mt-0.5 text-gray-400">
-                  Banque de Développement Local (BDL) — Direction Régionale d&apos;Exploitation DRE BOUIRA - 841 - — www.bdl.dz
+                  Banque de Développement Local (BDL) — Direction Régionale d&apos;Exploitation DRE BOUIRA - 841 -
                 </p>
               </div>
             </div>
