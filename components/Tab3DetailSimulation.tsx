@@ -9,6 +9,8 @@ import {
   AlertCircle,
   Sparkles,
   Calculator,
+  Store,
+  ArrowRight,
 } from "lucide-react";
 import { formatDZD } from "@/lib/calculations";
 import type { SimulationResults } from "@/lib/calculations";
@@ -311,6 +313,38 @@ export default function Tab3DetailSimulation({
                 {formatDZD(results.capaciteEndettement)}
               </span>
             </div>
+          </div>
+
+          {/* 4. BOUTON VERS LA PAGE NOS PARTENAIRES */}
+          <div className="p-4 sm:p-5 rounded-2xl border border-purple-200 bg-gradient-to-r from-purple-50 via-fuchsia-50/40 to-white shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex items-start gap-3 min-w-0">
+              <div className="p-2.5 rounded-xl bg-purple-100 text-[#6A1B9A] shrink-0 mt-0.5 sm:mt-0">
+                <Store className="w-5 h-5" />
+              </div>
+              <div className="min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h4 className="text-xs sm:text-sm font-bold text-gray-900 leading-tight">
+                    Nos Partenaires Conventionnés
+                  </h4>
+                  <span className="text-[10px] font-semibold bg-purple-100 text-[#6A1B9A] px-2 py-0.5 rounded-full">
+                    Réseau agréé
+                  </span>
+                </div>
+                <p className="text-xs text-gray-600 mt-1 leading-relaxed">
+                  Consultez la liste des marques et magasins conventionnés BDL pour votre agence sur la page dédiée <strong>Nos Partenaires</strong>.
+                </p>
+              </div>
+            </div>
+            {onNavigateToPartners && (
+              <button
+                type="button"
+                onClick={onNavigateToPartners}
+                className="px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold bg-white border border-purple-300 text-[#6A1B9A] hover:bg-purple-50 hover:border-purple-400 transition-all flex items-center justify-center gap-1.5 shadow-2xs shrink-0 cursor-pointer self-start sm:self-center whitespace-nowrap active:scale-[0.98]"
+              >
+                Voir nos partenaires
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            )}
           </div>
 
           {/* 5. PDF EXPORT ACTION CARD */}

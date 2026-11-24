@@ -52,8 +52,31 @@ export default function Tab1InfoClient({
       ? "Le revenu doit être supérieur ou égal à 36 000 DA."
       : undefined);
 
+  const handlePriceBlur = () => {
+    // If the client wrote a number lower than 36 000, do not accept it
+    if (price > 0 && price < 36000) {
+      onPriceChange(0);
+    }
+  };
+
+  const priceErrorMessage =
+    errors.price ||
+    (price > 0 && price < 36000
+      ? "Le prix du produit doit être supérieur ou égal à 36 000 DA."
+      : undefined);
+
   return (
     <div className="space-y-4 sm:space-y-5 w-full">
+      {/* Direction Régionale — read-only (sans libellé) */}
+      <div>
+        <input
+          type="text"
+          value="Banque de Développement Local (BDL) — DRE BOUIRA - 841 -"
+          readOnly
+          className="w-full px-3.5 py-2 sm:py-2.5 border border-purple-200 rounded-xl bg-purple-50/50 text-[#6A1B9A] font-semibold text-xs sm:text-sm cursor-not-allowed select-none text-center sm:text-left"
+        />
+      </div>
+
       {/* TYPE CLIENT */}
       <div className="space-y-1">
         <label className="block text-xs sm:text-sm font-medium text-gray-700">
@@ -101,11 +124,12 @@ export default function Tab1InfoClient({
         label="Prix du produit"
         value={price}
         onChange={onPriceChange}
+        onBlur={handlePriceBlur}
         step={10000}
         min={36000}
         suffix="د.ج."
         placeholder="36 000 DA minimum"
-        error={errors.price}
+        error={priceErrorMessage}
         required
       />
 

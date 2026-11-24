@@ -99,9 +99,9 @@ export default function SimulationWizard({
   }, [data.typesClient, typeClient]);
 
   // ─── Live calculation ───────────────────────────────────────
-  // Rejects revenu lower than 36 000 DA
+  // Rejects revenu lower than 36 000 DA and price lower than 36 000 DA
   const results: SimulationResults = useMemo(() => {
-    if (!revenu || revenu < 36000 || !dureeMois || !tauxProfit || !price) {
+    if (!revenu || revenu < 36000 || !dureeMois || !tauxProfit || !price || price < 36000) {
       return {
         mensualiteMax: 0,
         capaciteEndettement: 0,
@@ -132,7 +132,7 @@ export default function SimulationWizard({
     if (!revenu || revenu < 36000) {
       missing.push("Revenu mensuel (min. 36 000 DA)");
     }
-    if (!price || price <= 0) missing.push("Prix du produit");
+    if (!price || price < 36000) missing.push("Prix du produit (min. 36 000 DA)");
     if (!dureeMois || dureeMois <= 0) missing.push("Durée (mois)");
 
     // Simulation calculation validity
@@ -181,7 +181,11 @@ export default function SimulationWizard({
       errs.revenu = "Le revenu doit être supérieur ou égal à 36 000 DA.";
     }
     if (!dureeMois) errs.dureeMois = "Veuillez sélectionner une durée.";
-    if (!price || price <= 0) errs.price = "Le prix doit être supérieur à 0.";
+    if (!price || price <= 0) {
+      errs.price = "Le prix du produit doit être supérieur ou égal à 36 000 DA.";
+    } else if (price < 36000) {
+      errs.price = "Le prix du produit doit être supérieur ou égal à 36 000 DA.";
+    }
     return errs;
   }
 
@@ -331,8 +335,8 @@ export default function SimulationWizard({
         changed = true;
       }
 
-      // Clear price error as soon as price > 0
-      if (price > 0 && next.price) {
+      // Clear price error as soon as price >= 36 000
+      if (price >= 36000 && next.price) {
         delete next.price;
         changed = true;
       }
