@@ -2,6 +2,7 @@
 
 import React from "react";
 import NumericStepper from "@/components/NumericStepper";
+import { getMinProductPrice } from "@/lib/calculations";
 import type { TypeClient } from "@/data/fallbackData";
 
 interface FormErrors {
@@ -52,18 +53,20 @@ export default function Tab1InfoClient({
       ? "Le revenu doit être supérieur ou égal à 36 000 DA."
       : undefined);
 
+  const minPrice = getMinProductPrice(revenu);
+  const formattedMinPrice = minPrice === 55000 ? "55 000" : "50 000";
+
   const handlePriceBlur = () => {
-    // If the client wrote a number lower than 36 000, do not accept it
-    if (price > 0 && price < 36000) {
+    // If the client wrote a number lower than the minimum allowed price, do not accept it
+    if (price > 0 && price < minPrice) {
       onPriceChange(0);
     }
   };
 
   const priceErrorMessage =
-    errors.price ||
-    (price > 0 && price < 36000
-      ? "Le prix du produit doit être supérieur ou égal à 36 000 DA."
-      : undefined);
+    errors.price || (price > 0 && price < minPrice)
+      ? `Le prix du produit doit être supérieur ou égal à ${formattedMinPrice} DA.`
+      : undefined;
 
   return (
     <div className="space-y-4 sm:space-y-5 w-full">
@@ -126,9 +129,9 @@ export default function Tab1InfoClient({
         onChange={onPriceChange}
         onBlur={handlePriceBlur}
         step={10000}
-        min={36000}
+        min={minPrice}
         suffix="د.ج."
-        placeholder="36 000 DA minimum"
+        placeholder={`${formattedMinPrice} DA minimum`}
         error={priceErrorMessage}
         required
       />

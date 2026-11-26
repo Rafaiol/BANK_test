@@ -16,7 +16,7 @@ import Tab2Produit from "@/components/Tab2Produit";
 import Tab3DetailSimulation from "@/components/Tab3DetailSimulation";
 import SimulationPdfModal from "@/components/SimulationPdfModal";
 import Toast from "@/components/Toast";
-import { calculate } from "@/lib/calculations";
+import { calculate, getMinProductPrice } from "@/lib/calculations";
 import type { SimulationResults } from "@/lib/calculations";
 import type {
   Agence,
@@ -98,10 +98,13 @@ export default function SimulationWizard({
     return tc?.TAUX_DE_PROFIT ?? 0;
   }, [data.typesClient, typeClient]);
 
+  const minPrice = getMinProductPrice(revenu);
+  const formattedMinPrice = minPrice === 55000 ? "55 000" : "50 000";
+
   // ─── Live calculation ───────────────────────────────────────
-  // Rejects revenu lower than 36 000 DA and price lower than 36 000 DA
+  // Rejects revenu lower than 36 000 DA and price lower than minPrice (50 000 / 55 000 DA)
   const results: SimulationResults = useMemo(() => {
-    if (!revenu || revenu < 36000 || !dureeMois || !tauxProfit || !price || price < 36000) {
+    if (!revenu || revenu < 36000 || !dureeMois || !tauxProfit || !price || price < minPrice) {
       return {
         mensualiteMax: 0,
         capaciteEndettement: 0,
@@ -118,7 +121,7 @@ export default function SimulationWizard({
       price,
       categorie: selectedCategorie,
     });
-  }, [revenu, dureeMois, tauxProfit, price, selectedCategorie]);
+  }, [revenu, dureeMois, tauxProfit, price, minPrice, selectedCategorie]);
 
   // ─── PDF Export Readiness & Mandatory Fields Check ──────────
   const { isExportReady, missingFields } = useMemo(() => {
@@ -132,7 +135,7 @@ export default function SimulationWizard({
     if (!revenu || revenu < 36000) {
       missing.push("Revenu mensuel (min. 36 000 DA)");
     }
-    if (!price || price < 36000) missing.push("Prix du produit (min. 36 000 DA)");
+    if (!price || price < minPrice) missing.push(`Prix du produit (min. ${formattedMinPrice} DA)`);
     if (!dureeMois || dureeMois <= 0) missing.push("Durée (mois)");
 
     // Simulation calculation validity
@@ -149,6 +152,8 @@ export default function SimulationWizard({
     typeClient,
     revenu,
     price,
+    minPrice,
+    formattedMinPrice,
     dureeMois,
     results,
   ]);
@@ -181,10 +186,8 @@ export default function SimulationWizard({
       errs.revenu = "Le revenu doit être supérieur ou égal à 36 000 DA.";
     }
     if (!dureeMois) errs.dureeMois = "Veuillez sélectionner une durée.";
-    if (!price || price <= 0) {
-      errs.price = "Le prix du produit doit être supérieur ou égal à 36 000 DA.";
-    } else if (price < 36000) {
-      errs.price = "Le prix du produit doit être supérieur ou égal à 36 000 DA.";
+    if (!price || price <= 0 || price < minPrice) {
+      errs.price = `Le prix du produit doit être supérieur ou égal à ${formattedMinPrice} DA.`;
     }
     return errs;
   }
@@ -335,8 +338,8 @@ export default function SimulationWizard({
         changed = true;
       }
 
-      // Clear price error as soon as price >= 36 000
-      if (price >= 36000 && next.price) {
+      // Clear price error as soon as price >= minPrice
+      if (price >= minPrice && next.price) {
         delete next.price;
         changed = true;
       }
@@ -355,7 +358,7 @@ export default function SimulationWizard({
 
       return changed ? next : prev;
     });
-  }, [typeClient, revenu, price, dureeMois, telephone]);
+  }, [typeClient, revenu, price, minPrice, dureeMois, telephone]);
 
   return (
     <div className="w-full max-w-2xl mx-auto px-3 sm:px-4 py-4 sm:py-6">

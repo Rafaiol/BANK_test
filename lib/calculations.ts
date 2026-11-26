@@ -140,6 +140,11 @@ export function calculate(inputs: SimulationInputs): SimulationResults {
 
 // ─── Helpers ─────────────────────────────────────────────────
 
+/** Minimum allowed product price based on monthly income */
+export function getMinProductPrice(revenu: number): number {
+  return revenu > 0 && revenu <= 120000 ? 55000 : 50000;
+}
+
 /** Format a number as Algerian Dinar currency string */
 export function formatDZD(amount: number): string {
   return (
