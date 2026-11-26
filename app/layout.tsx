@@ -19,6 +19,7 @@ export const metadata: Metadata = {
   keywords: ["mourabaha", "financement", "islamique", "algérie", "simulation", "bdl", "badil", "bouira"],
   icons: {
     icon: "/logo.png",
+    apple: "/logo.png",
   },
 };
 
