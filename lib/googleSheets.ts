@@ -49,10 +49,10 @@ const localStore = {
   simulations: [] as any[],
 };
 
-// ─── Server In-Memory Cache (TTL 10 min) ──────────────────────
+// ─── Server In-Memory Cache (TTL 2 min) ───────────────────────
 let cachedLookupData: any = null;
 let cacheTimestamp = 0;
-const CACHE_TTL_MS = 10 * 60 * 1000;
+const CACHE_TTL_MS = 2 * 60 * 1000;
 
 export function invalidateLookupCache() {
   cachedLookupData = null;
@@ -138,7 +138,8 @@ function parseCSV(text: string): string[][] {
 // ─── Direct Live Fetch via Google Sheets Export ───────────────
 function fetchPublicSheetCSV(sheetName: string): Promise<string[][] | null> {
   const sheetId = getTargetSheetId();
-  const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(
+  // headers=1 forces Google Visualization API to treat only row 1 as headers (prevents collapsing top data rows)
+  const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&headers=1&sheet=${encodeURIComponent(
     sheetName,
   )}`;
 
@@ -216,69 +217,84 @@ export async function getAllLookupData() {
       const rPdvs = valueRanges[6]?.values ?? [];
       const rCheckList = valueRanges[7]?.values ?? [];
 
-      if (rProduits.length > 0) {
-        const agences: Agence[] = rAgences.map((r) => ({
-          CODE: r[0] ?? "",
-          AGENCE: r[1] ?? "",
-        }));
+      if (rProduits.length > 0 || rPdvs.length > 0) {
+        const agences: Agence[] = rAgences
+          .map((r) => ({
+            CODE: (r[0] ?? "").trim(),
+            AGENCE: (r[1] ?? "").trim(),
+          }))
+          .filter((a) => a.CODE);
 
-        const couverture: CouvertureAgence[] = rCouverture.map((r) => ({
-          CODE_AGENCE: r[0] ?? "",
-          NOM_AGENCE: r[1] ?? "",
-          WILAYA: r[2] ?? "",
-        }));
+        const couverture: CouvertureAgence[] = rCouverture
+          .map((r) => ({
+            CODE_AGENCE: (r[0] ?? "").trim(),
+            NOM_AGENCE: (r[1] ?? "").trim(),
+            WILAYA: (r[2] ?? "").trim(),
+          }))
+          .filter((c) => c.CODE_AGENCE);
 
-        const typesClient: TypeClient[] = rTypes.map((r) => ({
-          NOM_TYPE_CLIENT: r[0] ?? "",
-          TAUX_DE_PROFIT:
-            parseFloat((r[1] ?? "0").replace("%", "").replace(",", ".")) / 100,
-        }));
+        const typesClient: TypeClient[] = rTypes
+          .map((r) => ({
+            NOM_TYPE_CLIENT: (r[0] ?? "").trim(),
+            TAUX_DE_PROFIT:
+              parseFloat((r[1] ?? "0").replace("%", "").replace(",", ".")) / 100,
+          }))
+          .filter((t) => t.NOM_TYPE_CLIENT);
 
-        const categories: Categorie[] = rCategories.map((r) => ({
-          CATEGORIE: r[0] ?? "",
-        }));
+        const categories: Categorie[] = rCategories
+          .map((r) => ({
+            CATEGORIE: (r[0] ?? "").trim(),
+          }))
+          .filter((c) => c.CATEGORIE);
 
-        const marques: Marque[] = rMarques.map((r) => ({
-          MARQUE: r[0] ?? "",
-          LOGO: r[1] ?? "",
-        }));
+        const marques: Marque[] = rMarques
+          .map((r) => ({
+            MARQUE: (r[0] ?? "").trim(),
+            LOGO: (r[1] ?? "").trim(),
+          }))
+          .filter((m) => m.MARQUE);
 
-        const produits: Produit[] = rProduits.map((r) => ({
-          ID_PRODUIT: r[0] ?? "",
-          CATEGORIE: r[1] ?? "",
-          MARQUE: r[2] ?? "",
-          PRODUIT_GENERIQUE: r[3] ?? "",
-        }));
+        const produits: Produit[] = rProduits
+          .map((r) => ({
+            ID_PRODUIT: (r[0] ?? "").trim(),
+            CATEGORIE: (r[1] ?? "").trim(),
+            MARQUE: (r[2] ?? "").trim(),
+            PRODUIT_GENERIQUE: (r[3] ?? "").trim(),
+          }))
+          .filter((p) => p.ID_PRODUIT && p.PRODUIT_GENERIQUE);
 
-        const pdvs: PointDeVente[] = rPdvs.map((r) => ({
-          ID_PDV: r[0] ?? "",
-          CATEGORIE: r[1] ?? "",
-          MARQUE: r[2] ?? "",
-          Commercial: r[3] ?? "",
-          Adresse: r[4] ?? "",
-          Wilaya: r[5] ?? "",
-          Telephone: r[6] ?? "",
-        }));
+        const pdvs: PointDeVente[] = rPdvs
+          .map((r) => ({
+            ID_PDV: (r[0] ?? "").trim(),
+            CATEGORIE: (r[1] ?? "").trim(),
+            MARQUE: (r[2] ?? "").trim(),
+            Commercial: (r[3] ?? "").trim(),
+            Adresse: (r[4] ?? "").trim(),
+            Wilaya: (r[5] ?? "").trim(),
+            Telephone: (r[6] ?? "").trim(),
+          }))
+          .filter((p) => Boolean(p.ID_PDV || p.Commercial));
 
         const checkList: CheckListItem[] = [];
         for (let i = 0; i < rCheckList.length - 1; i += 2) {
           checkList.push({
-            fr: rCheckList[i][0] ?? "",
-            ar: rCheckList[i + 1]?.[0] ?? "",
+            fr: (rCheckList[i][0] ?? "").trim(),
+            ar: (rCheckList[i + 1]?.[0] ?? "").trim(),
           });
         }
 
         cachedLookupData = {
-          agences,
-          couverture,
-          typesClient,
-          categories,
-          marques,
-          produits,
-          pdvs,
-          checkList,
+          agences: agences.length > 0 ? agences : localStore.agences,
+          couverture: couverture.length > 0 ? couverture : localStore.couverture,
+          typesClient: typesClient.length > 0 ? typesClient : localStore.typesClient,
+          categories: categories.length > 0 ? categories : localStore.categories,
+          marques: marques.length > 0 ? marques : localStore.marques,
+          produits: produits.length > 0 ? produits : localStore.produits,
+          pdvs: pdvs.length > 0 ? pdvs : localStore.pdvs,
+          checkList: checkList.length > 0 ? checkList : localStore.checkList,
         };
         cacheTimestamp = now;
+        Object.assign(localStore, cachedLookupData);
         return cachedLookupData;
       }
     } catch (err) {
@@ -308,38 +324,38 @@ export async function getAllLookupData() {
       fetchPublicSheetCSV(SHEET_TABS.checkList),
     ]);
 
-    if (rProduits && rProduits.length > 1) {
+    if ((rProduits && rProduits.length > 1) || (rPdvs && rPdvs.length > 1)) {
       const agences: Agence[] = (rAgences || [])
         .slice(1)
-        .map((r) => ({ CODE: r[0] || "", AGENCE: r[1] || "" }))
+        .map((r) => ({ CODE: (r[0] || "").trim(), AGENCE: (r[1] || "").trim() }))
         .filter((a) => a.CODE);
 
       const couverture: CouvertureAgence[] = (rCouverture || [])
         .slice(1)
         .map((r) => ({
-          CODE_AGENCE: r[0] || "",
-          NOM_AGENCE: r[1] || "",
-          WILAYA: r[2] || "",
+          CODE_AGENCE: (r[0] || "").trim(),
+          NOM_AGENCE: (r[1] || "").trim(),
+          WILAYA: (r[2] || "").trim(),
         }))
         .filter((c) => c.CODE_AGENCE);
 
       const categories: Categorie[] = (rCategories || [])
         .slice(1)
-        .map((r) => ({ CATEGORIE: r[0] || "" }))
+        .map((r) => ({ CATEGORIE: (r[0] || "").trim() }))
         .filter((c) => c.CATEGORIE);
 
       const marques: Marque[] = (rMarques || [])
         .slice(1)
-        .map((r) => ({ MARQUE: r[0] || "", LOGO: r[1] || "" }))
+        .map((r) => ({ MARQUE: (r[0] || "").trim(), LOGO: (r[1] || "").trim() }))
         .filter((m) => m.MARQUE);
 
       const produits: Produit[] = (rProduits || [])
         .slice(1)
         .map((r) => ({
-          ID_PRODUIT: r[0] || "",
-          CATEGORIE: r[1] || "",
-          MARQUE: r[2] || "",
-          PRODUIT_GENERIQUE: r[3] || "",
+          ID_PRODUIT: (r[0] || "").trim(),
+          CATEGORIE: (r[1] || "").trim(),
+          MARQUE: (r[2] || "").trim(),
+          PRODUIT_GENERIQUE: (r[3] || "").trim(),
         }))
         .filter((p) => p.ID_PRODUIT && p.PRODUIT_GENERIQUE);
 
@@ -348,7 +364,7 @@ export async function getAllLookupData() {
         .map((r) => {
           const raw = (r[1] || "0").replace("%", "").replace(",", ".").trim();
           return {
-            NOM_TYPE_CLIENT: r[0] || "",
+            NOM_TYPE_CLIENT: (r[0] || "").trim(),
             TAUX_DE_PROFIT: (parseFloat(raw) || 0) / 100,
           };
         })
@@ -357,15 +373,15 @@ export async function getAllLookupData() {
       const pdvs: PointDeVente[] = (rPdvs || [])
         .slice(1)
         .map((r) => ({
-          ID_PDV: r[0] || "",
-          CATEGORIE: r[1] || "",
-          MARQUE: r[2] || "",
-          Commercial: r[3] || "",
-          Adresse: r[4] || "",
-          Wilaya: r[5] || "",
-          Telephone: r[6] || "",
+          ID_PDV: (r[0] || "").trim(),
+          CATEGORIE: (r[1] || "").trim(),
+          MARQUE: (r[2] || "").trim(),
+          Commercial: (r[3] || "").trim(),
+          Adresse: (r[4] || "").trim(),
+          Wilaya: (r[5] || "").trim(),
+          Telephone: (r[6] || "").trim(),
         }))
-        .filter((p) => p.ID_PDV && p.ID_PDV.startsWith("PDV"));
+        .filter((p) => Boolean(p.ID_PDV || p.Commercial));
 
       const checkList: CheckListItem[] = [];
       const clLines = (rCheckList || []).slice(1).map((r) => r[0] || "").filter(Boolean);

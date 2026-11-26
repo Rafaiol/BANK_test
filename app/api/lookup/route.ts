@@ -6,8 +6,8 @@ export async function GET() {
     const data = await getAllLookupData();
     return NextResponse.json(data, {
       headers: {
-        // Cache at CDN/browser edge for 5 minutes, stale-while-revalidate 10 min
-        "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600",
+        // Cache at CDN/browser edge for 1 minute, stale-while-revalidate 2 min
+        "Cache-Control": "public, s-maxage=60, stale-while-revalidate=120",
       },
     });
   } catch (error) {

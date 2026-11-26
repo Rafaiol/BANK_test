@@ -44,38 +44,83 @@ export default function PartenairesView({
   const [selectedCategorie, setSelectedCategorie] = useState<string>("");
   const [selectedMarque, setSelectedMarque] = useState<string>("");
 
-  const isMeuble = (selectedCategorie || "").toLowerCase().trim() === "meuble";
+  const targetCat = (selectedCategorie || "").trim().toLowerCase();
+  const isMeuble = targetCat === "meuble";
 
-  // Filter available brands based on selected agence + category
+  // Filter available brands based on selected agence + category (from both produits & pdvs)
   const filteredMarques = useMemo(() => {
     if (!selectedAgence || !selectedCategorie) return [];
     if (isMeuble) return [];
-    const catProds = produits.filter(
-      (p) => p.CATEGORIE.toLowerCase() === selectedCategorie.toLowerCase()
+
+    const brandSet = new Set<string>();
+    for (const p of produits) {
+      if (p.CATEGORIE.trim().toLowerCase() === targetCat && p.MARQUE.trim()) {
+        brandSet.add(p.MARQUE.trim().toUpperCase());
+      }
+    }
+    for (const pdv of pdvs) {
+      if (pdv.CATEGORIE.trim().toLowerCase() === targetCat && pdv.MARQUE.trim()) {
+        brandSet.add(pdv.MARQUE.trim().toUpperCase());
+      }
+    }
+
+    if (brandSet.size === 0) return [];
+
+    const matched = marques.filter((m) =>
+      brandSet.has(m.MARQUE.trim().toUpperCase())
     );
-    const catBrands = new Set(catProds.map((p) => p.MARQUE.toUpperCase()));
-    return marques.filter((m) => catBrands.has(m.MARQUE.toUpperCase()));
-  }, [selectedAgence, selectedCategorie, isMeuble, produits, marques]);
+    const existingUpper = new Set(
+      matched.map((m) => m.MARQUE.trim().toUpperCase())
+    );
+    for (const b of brandSet) {
+      if (!existingUpper.has(b)) {
+        matched.push({ MARQUE: b, LOGO: "" });
+      }
+    }
+    return matched;
+  }, [selectedAgence, selectedCategorie, targetCat, isMeuble, produits, pdvs, marques]);
+
+  // Categories like Meuble, Motor Cycle VMS, and PC SCHNEIDER have no sub-brands:
+  // their PDVs appear immediately after selecting Agence + Categorie.
+  const hasBrandChoices = filteredMarques.length > 0;
 
   // Filter Points de Vente using agency coverage
   const filteredPDVs = useMemo((): PointDeVente[] => {
     if (!selectedAgence || !selectedCategorie) return [];
-    if (!isMeuble && !selectedMarque) return [];
+    if (hasBrandChoices && !selectedMarque) return [];
 
-    const coveredWilayas = couverture
-      .filter((c) => c.CODE_AGENCE === selectedAgence)
-      .map((c) => c.WILAYA.toLowerCase());
-
-    return pdvs.filter(
-      (pdv) =>
-        coveredWilayas.includes(pdv.Wilaya.toLowerCase()) &&
-        pdv.CATEGORIE.toLowerCase() === selectedCategorie.toLowerCase() &&
-        (isMeuble ||
-          selectedMarque === "ALL" ||
-          pdv.MARQUE.toLowerCase() === selectedMarque.toLowerCase() ||
-          pdv.MARQUE === "")
+    const coveredWilayas = new Set(
+      couverture
+        .filter((c) => c.CODE_AGENCE.trim() === selectedAgence.trim())
+        .map((c) => c.WILAYA.trim().toLowerCase())
     );
-  }, [selectedAgence, selectedCategorie, selectedMarque, isMeuble, pdvs, couverture]);
+
+    return pdvs.filter((pdv) => {
+      const pdvWilaya = pdv.Wilaya.trim().toLowerCase();
+      const pdvCat = pdv.CATEGORIE.trim().toLowerCase();
+      const pdvMarque = pdv.MARQUE.trim().toLowerCase();
+
+      if (!coveredWilayas.has(pdvWilaya) || pdvCat !== targetCat) {
+        return false;
+      }
+      if (!hasBrandChoices) {
+        return true;
+      }
+      return (
+        selectedMarque === "ALL" ||
+        pdvMarque === selectedMarque.trim().toLowerCase() ||
+        pdvMarque === ""
+      );
+    });
+  }, [
+    selectedAgence,
+    selectedCategorie,
+    selectedMarque,
+    targetCat,
+    hasBrandChoices,
+    pdvs,
+    couverture,
+  ]);
 
   const selectedAgenceObj = agences.find((a) => a.CODE === selectedAgence);
 
@@ -174,17 +219,17 @@ export default function PartenairesView({
           </div>
         </div>
 
-        {/* Step 3: Selectable Brand Logos (when not Meuble) */}
+        {/* Step 3: Selectable Brand Logos (if category has sub-brands), otherwise show PDVs directly */}
         {selectedAgence && selectedCategorie && (
           <div className="space-y-4 pt-2 border-t border-gray-100">
-            {isMeuble ? (
+            {!hasBrandChoices ? (
               <div className="p-4 rounded-2xl bg-purple-50/70 border border-purple-200 flex items-center gap-2.5 text-xs text-purple-900">
                 <CheckCircle2 className="w-4 h-4 text-[#6A1B9A] shrink-0" />
                 <span>
-                  Pour la catégorie <strong>Meuble</strong>, les points de vente conventionnés ci-dessous sont agréés pour tous types de mobilier.
+                  Catégorie <strong>{selectedCategorie.trim()}</strong> — les points de vente conventionnés couverts par votre agence sont affichés ci-dessous.
                 </span>
               </div>
-            ) : filteredMarques.length > 0 ? (
+            ) : (
               <div className="space-y-2.5">
                 <div className="flex items-center justify-between flex-wrap gap-2">
                   <label className="block text-xs font-semibold text-gray-700 flex items-center gap-1.5">
@@ -206,7 +251,7 @@ export default function PartenairesView({
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
                   {filteredMarques.map((m) => {
                     const isSelected =
-                      selectedMarque.toUpperCase() === m.MARQUE.toUpperCase();
+                      selectedMarque.trim().toUpperCase() === m.MARQUE.trim().toUpperCase();
                     return (
                       <button
                         type="button"
@@ -240,14 +285,10 @@ export default function PartenairesView({
                   })}
                 </div>
               </div>
-            ) : (
-              <div className="p-6 text-center text-xs text-gray-500 bg-gray-50 rounded-2xl border border-gray-200">
-                Aucune marque conventionnée trouvée pour cette catégorie dans cette agence.
-              </div>
             )}
 
             {/* Step 4: Restored Points de Vente Table when everything is selected */}
-            {(isMeuble || selectedMarque) && (
+            {(!hasBrandChoices || selectedMarque) && (
               <div className="space-y-3 pt-3 border-t border-purple-100 animate-in fade-in-50 duration-200">
                 <div className="flex items-center justify-between flex-wrap gap-2">
                   <div className="flex items-center gap-2">
@@ -255,7 +296,7 @@ export default function PartenairesView({
                       Magasins &amp; Points de Vente Agréés
                     </h3>
                     <span className="text-xs text-purple-700 bg-purple-100 font-semibold px-2 py-0.5 rounded-md">
-                      {isMeuble ? "Meuble" : selectedMarque}
+                      {!hasBrandChoices ? selectedCategorie.trim() : selectedMarque}
                     </span>
                     {selectedAgenceObj && (
                       <span className="text-xs text-gray-500 hidden sm:inline">
@@ -272,18 +313,18 @@ export default function PartenairesView({
                 {filteredPDVs.length > 0 ? (
                   <PDVTable
                     pdvs={filteredPDVs}
-                    title={`Points de vente conventionnés (${isMeuble ? "Meuble" : selectedMarque})`}
+                    title={`Points de vente conventionnés (${!hasBrandChoices ? selectedCategorie.trim() : selectedMarque})`}
                   />
                 ) : (
                   <div className="p-6 text-center text-xs text-gray-500 bg-gray-50 rounded-2xl border border-gray-200">
-                    Aucun point de vente conventionné trouvé pour ces critères spécifiques. Veuillez vous rapprocher de votre agence.
+                    Aucun point de vente conventionné trouvé pour ces critères spécifiques dans cette agence. Veuillez vous rapprocher de votre agence.
                   </div>
                 )}
               </div>
             )}
 
             {/* Hint when agence & categorie selected, but brand not yet picked */}
-            {!isMeuble && !selectedMarque && filteredMarques.length > 0 && (
+            {hasBrandChoices && !selectedMarque && (
               <div className="p-4 text-center text-xs text-purple-800 bg-purple-50/50 rounded-2xl border border-purple-100">
                 👆 Cliquez sur l&apos;un des logos ci-dessus pour afficher la liste de ses magasins et points de vente agréés.
               </div>
